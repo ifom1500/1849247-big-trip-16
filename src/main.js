@@ -1,48 +1,49 @@
-import { createMenuComponent } from './view/menu-view.js';
-import { createFiltersComponent } from './view/filters-view.js';
-import { createSortingComponent } from './view/sorting-view.js';
-import { createFormEditComponent } from './view/form-edit-view.js';
-import { createFormCreateComponent } from './view/form-create-view.js';
-import { createPointComponent } from './view/trip-point-view.js';
-
+import { createMenuTemplate } from './view/menu-view.js';
+import { createFiltersTemplate } from './view/filters-view.js';
+import { createSortingTemplate } from './view/sorting-view.js';
+import { createFormEditTemplate } from './view/form-edit-view.js';
+import { createFormCreateTemplate } from './view/form-create-view.js';
+import { createPointTemplate } from './view/trip-point-view.js';
+import { createEventsListTemplate } from './view/events-list-view.js'
 
 const POINT_COUNT = 3;
 
 const RenderPosition = {
-  BEFOREBEGIN: 'beforebegin',
-  AFTERBEGIN: 'afterbegin',
-  BEFOREEND: 'beforeend',
-  AFTEREND: 'afterend',
+  BEFORE_BEGIN: 'beforebegin',
+  AFTER_BEGIN: 'afterbegin',
+  BEFORE_END: 'beforeend',
+  AFTER_END: 'afterend',
 };
 
 const headerElement = document.querySelector('.page-header');
 const mainElement = document.querySelector('.page-main');
 
+// Render Function
 
-const renderComponent = (container, component, position) => {
-  container.insertAdjacentHTML(position, component);
+const renderTemplate = (container, template, place) => {
+  container.insertAdjacentHTML(place, template);
 };
 
 // Menu, Filter, Sorting
 
 const navigationElement = headerElement.querySelector('.trip-controls__navigation');
-renderComponent(navigationElement, createMenuComponent(), RenderPosition.BEFOREEND);
+renderTemplate(navigationElement, createMenuTemplate(), RenderPosition.BEFORE_END);
 
-const filtersElement = headerElement.querySelector('.trip-controls__filters');
-renderComponent(filtersElement, createFiltersComponent(), RenderPosition.BEFOREEND);
+const filtersAndButtonElement = headerElement.querySelector('.trip-controls');
+renderTemplate(filtersAndButtonElement, createFiltersTemplate(), RenderPosition.BEFORE_END);
 
-const eventsElement = mainElement.querySelector('.trip-events');
-renderComponent(eventsElement, createSortingComponent(), RenderPosition.AFTERBEGIN);
+const tripEventsElement = mainElement.querySelector('.trip-events');
+renderTemplate(tripEventsElement, createSortingTemplate(), RenderPosition.AFTER_BEGIN);
 
 // Content
 
-const eventsListElement = document.createElement('ul');
-eventsListElement.classList.add('trip-events__list');
-eventsElement.append(eventsListElement);
+const eventsListTemplate = createEventsListTemplate();
+console.log('111', eventsListTemplate); //?
+renderTemplate(tripEventsElement, eventsListTemplate, RenderPosition.BEFORE_END);
 
-renderComponent(eventsListElement, createFormEditComponent(), RenderPosition.AFTERBEGIN);
-renderComponent(eventsListElement, createFormCreateComponent(), RenderPosition.BEFOREEND);
+renderTemplate(eventsListTemplate, createFormEditTemplate(), RenderPosition.AFTER_BEGIN);
+renderTemplate(eventsListTemplate, createFormCreateTemplate(), RenderPosition.BEFORE_END);
 
 for (let i = 0; i < POINT_COUNT; i++) {
-  renderComponent(eventsListElement, createPointComponent(), RenderPosition.BEFOREEND);
+  renderTemplate(eventsListTemplate, createPointTemplate(), RenderPosition.BEFORE_END);
 }
