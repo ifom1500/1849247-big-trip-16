@@ -44,7 +44,7 @@ renderTemplate(tripControlsElement, createFiltersTemplate(), RenderPosition.BEFO
 
 // MAIN
 // Контейнер tripEvents
-renderTemplate(mainContainerElement, createTripEventsTemplate, RenderPosition.AFTER_BEGIN);
+renderTemplate(mainContainerElement, createTripEventsTemplate(), RenderPosition.AFTER_BEGIN);
 const tripEventsElement = mainElement.querySelector('.trip-events');
 
 // Сортировка
