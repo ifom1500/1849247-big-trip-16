@@ -10,37 +10,49 @@
   </head>
 
   <body class="page-body">
+    <!-- headerElement -->
     <header class="page-header">
+
+      <!-- Контейнер header  -->
       <div class="page-body__container  page-header__container">
         <img class="page-header__logo" src="img/logo.png" width="42" height="42" alt="Trip logo">
 
+        <!-- Контейнер с меню, фильтром и кнопкой New event - tripMainElement -->
         <div class="trip-main">
+
+          <!-- Контейнер - Меню + фильтры - tripControlsElement -->
           <div class="trip-main__trip-controls  trip-controls">
+
+            <!-- Контейнер меню - navigationElement -->
             <div class="trip-controls__navigation">
               <h2 class="visually-hidden">Switch trip view</h2>
-              <!-- Меню -->
+              <!-- Здесь - Меню -->
             </div>
 
-            <div class="trip-controls__filters">
-              <h2 class="visually-hidden">Filter events</h2>
-              <!-- Фильтры -->
-            </div>
+            <!-- Здесь - Фильтры: -->
+            <!-- Обертка + форма -->
           </div>
 
-          <button class="trip-main__event-add-btn  btn  btn--big  btn--yellow" type="button">New event</button>
+          <!-- Здесь - Кнопка Новое событие -->
         </div>
       </div>
     </header>
+
+    <!-- mainElement -->
     <main class="page-body__page-main  page-main">
-      <div class="page-body__container">
-          <section class="trip-events">
-            <h2 class="visually-hidden">Trip events</h2>
 
-            <!-- Сортировка -->
+      <!-- Контейнер main - mainContainerElement -->
+      <div class="page-body__container page-main__container">
 
-            <!-- Контент -->
-          </section>
+        <!-- Контейнер Сортировка + Контент - tripEventsElement -->
+
+          <!-- Здесь - Сортировка -->
+          <!-- Лист - trip-events__list -->
+            <!-- Точки -->
+
       </div>
     </main>
+
+    <script src="./bundle.js"></script>
   </body>
 </html>
