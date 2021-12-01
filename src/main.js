@@ -8,6 +8,8 @@ import { createEventsListTemplate } from './view/events-list-view.js';
 import { createNewEventButtonTemplate } from './view/new-event-button-view.js';
 import { createTripEventsTemplate } from './view/trip-events-view.js';
 
+import {} from './mock/trip-point.js';
+
 const POINT_COUNT = 3;
 
 const RenderPosition = {
