@@ -20,33 +20,32 @@ const generateDate = () => {
   const daysGap = getRandomInteger(-maxDaysGap, maxDaysGap);
 
   // return dayjs().add(daysGap, 'day').toDate();
-
-
 };
 
-const timeStart = generateDate();
-console.log('111', timeStart);
-const timeEnd = timeStart + getRandomInteger();
-console.log('222', timeEnd);
+// const day time - задать день и время начала маршрута
+// ---- dayjs(1318781876406) или var d = new Date(2018, 8, 18)
 
+// day + someTime hours and mins - 1 точка ---- dayjs(day).add(100, 'minute').toDate();
+// day + someTime hours and mins - 2 точка
 
-// export const generatetripPoint = () => {
-//   const timeStart = generateDate();
-//   const timeEnd = timeStart + getRandomInteger();
+export const generatetripPoint = () => {
+  const day =
 
-//   return {
-//     type: '', // 1 from -> Taxi, Bus, Train, Ship, Drive, Flight, Check-in, Sightseeing, Restaurant
-//     destination: '', // 1 from -> Санкт-Петербург, Екатеринбург, Новосибирск, Северодвинск, Байкал, Куриллы
-//     timeStart,
-//     timeEnd,
-//     price: '',
-//     offers: '', // 0-5 шт - объект {название, цена}
-//     destinationInfo: {
-//       description: generateDescription(),
-//       photos: [],  // http://picsum.photos/248/152?r=случайное_число
-//     },
-//     isFavorite: false,
-//     isFuture: false,
-//     isPast: false,
-//   };
-// };
+  return {
+    basePrice: null, // number - 1100
+    dateFrom: '2019-07-10T22:55:56.845Z',
+    dateTo: '2019-07-11T11:22:13.375Z',
+    destination: '',
+    id: null, // 0
+    isFavorite: false,
+    offers: '', // 0-5 шт - объект {название, цена}
+    type: '',
+    // ["taxi", "bus", "train", "ship", "drive", "flight", "check-in", "sightseeing", "restaurant"]
+    destinationInfo: {
+      description: generateDescription(),
+      photos: [],  // http://picsum.photos/248/152?r=случайное_число
+    },
+    isFuture: false,
+    isPast: false,
+  };
+};
