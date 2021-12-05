@@ -1,4 +1,7 @@
 import dayjs from 'dayjs';
+import objectSupport from 'dayjs/plugin/objectSupport';
+
+dayjs.extend(objectSupport);
 
 const getRandomInteger = (a = 0, b = 1) => {
   const lower = Math.ceil(Math.min(a, b));
@@ -15,37 +18,82 @@ const generateDescription = () => {
   return descriptons[randomIndex];
 };
 
-const generateDate = () => {
-  const maxDaysGap = 7;
-  const daysGap = getRandomInteger(-maxDaysGap, maxDaysGap);
+const startDay = dayjs({
+  year: getRandomInteger(2022, 2024),
+  month: getRandomInteger(0, 11),
+  day: getRandomInteger(1, 30),
+  hour: getRandomInteger(0, 24),
+  minute: getRandomInteger(0, 60),
+});
 
-  // return dayjs().add(daysGap, 'day').toDate();
+const createTimePoints = (count) => {
+  let points = [startDay];
+
+  for (let i = 0; i < count; i++) {
+    const nextTimePoint = points[i].add(getRandomInteger(5, 60), 'minute');
+    points = [...points, nextTimePoint];
+  }
+
+  return points;
 };
 
-// const day time - задать день и время начала маршрута
-// ---- dayjs(1318781876406) или var d = new Date(2018, 8, 18)
+const createCounter = () => {
+  let i = 0;
+  return () => i++;
+};
 
-// day + someTime hours and mins - 1 точка ---- dayjs(day).add(100, 'minute').toDate();
-// day + someTime hours and mins - 2 точка
+const counter = createCounter();
 
-export const generatetripPoint = () => {
-  const day =
-
-  return {
-    basePrice: null, // number - 1100
-    dateFrom: '2019-07-10T22:55:56.845Z',
-    dateTo: '2019-07-11T11:22:13.375Z',
-    destination: '',
-    id: null, // 0
-    isFavorite: false,
-    offers: '', // 0-5 шт - объект {название, цена}
-    type: '',
-    // ["taxi", "bus", "train", "ship", "drive", "flight", "check-in", "sightseeing", "restaurant"]
+const generateTripPoint = (timePointsArray) => (
+  {
+    basePrice: getRandomInteger(20, 200),
+    dateFrom: `${timePointsArray[counter()].toJSON()}`,
+    dateTo: `${timePointsArray[counter() + 1].toJSON()}`,
+    // выражение counter() + 1 выполнено для быстрого построения цепочки времен
+    // когда время завершения предыдущего пункта является временем начала следующего
+    // это не верно с точки зрения что я перепрыгиваю через элемент массива, а не беру по порядку
+    // но так как это моки, то оставляю так. Данный поясняющий комментарий удалю позже.
+    destination: 'Hogwarts School',
+    id: '0',
+    isFavorite: Boolean(getRandomInteger(0, 1)),
+    offers: [
+      {
+        type: 'taxi',
+        offers: [
+          {
+            id: 1,
+            title: 'Upgrade ',
+            price: 1
+          }, {
+            id: 2,
+            title: 'Choose the radio station',
+            price: 60
+          }
+        ]
+      },
+      {
+        type: 'flight',
+        offers: [
+          {
+            id: 1,
+            title: 'Upgrade to a business class',
+            price: 120
+          }, {
+            id: 2,
+            title: 'Choose the radio station',
+            price: 60
+          }
+        ]
+      }
+    ],
+    type: 'bus',
     destinationInfo: {
       description: generateDescription(),
       photos: [],  // http://picsum.photos/248/152?r=случайное_число
     },
-    isFuture: false,
-    isPast: false,
-  };
-};
+    isFuture: Boolean(getRandomInteger(0, 1)),
+    isPast: Boolean(getRandomInteger(0, 1)),
+  }
+);
+
+export { createTimePoints, generateTripPoint };
