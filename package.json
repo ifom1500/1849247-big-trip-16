@@ -9,6 +9,9 @@
     "build": "webpack --mode development",
     "start": "webpack serve --mode development --open"
   },
+  "dependencies": {
+    "dayjs": "1.10.7"
+  },
   "devDependencies": {
     "@babel/core": "7.16.0",
     "@babel/eslint-parser": "7.16.0",

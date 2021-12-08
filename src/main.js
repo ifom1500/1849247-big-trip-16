@@ -8,6 +8,8 @@ import { createEventsListTemplate } from './view/events-list-view.js';
 import { createNewEventButtonTemplate } from './view/new-event-button-view.js';
 import { createTripEventsTemplate } from './view/trip-events-view.js';
 
+import { destinations, tripPoints, allOffers } from './mock/trip-point.js';
+
 const POINT_COUNT = 3;
 
 const RenderPosition = {
@@ -44,7 +46,7 @@ renderTemplate(tripControlsElement, createFiltersTemplate(), RenderPosition.BEFO
 
 // MAIN
 // Контейнер tripEvents
-renderTemplate(mainContainerElement, createTripEventsTemplate, RenderPosition.AFTER_BEGIN);
+renderTemplate(mainContainerElement, createTripEventsTemplate(), RenderPosition.AFTER_BEGIN);
 const tripEventsElement = mainElement.querySelector('.trip-events');
 
 // Сортировка
@@ -56,10 +58,19 @@ renderTemplate(tripEventsElement, createEventsListTemplate(), RenderPosition.BEF
 const tripEventsListElement = mainElement.querySelector('.trip-events__list');
 
 // Формы редактирования и создания точек
-renderTemplate(tripEventsListElement, createFormEditTemplate(), RenderPosition.AFTER_BEGIN);
-renderTemplate(tripEventsListElement, createFormCreateTemplate(), RenderPosition.BEFORE_END);
+renderTemplate(tripEventsListElement, createFormEditTemplate(tripPoints[0], destinations, allOffers), RenderPosition.AFTER_BEGIN);
+renderTemplate(tripEventsListElement, createFormCreateTemplate(tripPoints[0], destinations, allOffers), RenderPosition.BEFORE_END);
 
 // Точки маршрута
 for (let i = 0; i < POINT_COUNT; i++) {
-  renderTemplate(tripEventsListElement, createPointTemplate(), RenderPosition.BEFORE_END);
+  renderTemplate(tripEventsListElement, createPointTemplate(tripPoints[i]), RenderPosition.BEFORE_END);
 }
+
+// Подписка на события
+const eventGroupSelect = mainContainerElement.querySelector('.event__type-group');
+const eventTypeBtn = mainContainerElement.querySelector('.event__type-btn');
+const eventTypeBtnIcon = eventTypeBtn.querySelector('.event__type-icon');
+
+eventGroupSelect.addEventListener('change', (evt) => {
+  eventTypeBtnIcon.src = `img/icons/${evt.target.value}.png`;
+});
