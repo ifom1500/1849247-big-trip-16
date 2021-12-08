@@ -1,4 +1,4 @@
-import { makeCapLetter } from '../utils/utils.js';
+import { capitalise } from '../utils/utils.js';
 import { formatPointDuration } from '../utils/date.js';
 
 
@@ -48,7 +48,7 @@ export const createPointTemplate = (point) => {
           src="img/icons/${type}.png"
           alt="Event type icon">
       </div>
-      <h3 class="event__title">${makeCapLetter(type)} ${destination.name}</h3>
+      <h3 class="event__title">${capitalise(type)} ${destination.name}</h3>
       <div class="event__schedule">
         <p class="event__time">
           <time

@@ -67,10 +67,10 @@ for (let i = 0; i < POINT_COUNT; i++) {
 }
 
 // Подписка на события
-const eventGroupSelect = mainContainerElement.querySelector('.event__type-group');
-const eventTypeBtn = mainContainerElement.querySelector('.event__type-btn');
-const eventTypeBtnIcon = eventTypeBtn.querySelector('.event__type-icon');
+const eventGroupSelectElement = mainContainerElement.querySelector('.event__type-group');
+const eventTypeButtonElement = mainContainerElement.querySelector('.event__type-btn');
+const eventTypeButtonIconElement = eventTypeButtonElement.querySelector('.event__type-icon');
 
-eventGroupSelect.addEventListener('change', (evt) => {
-  eventTypeBtnIcon.src = `img/icons/${evt.target.value}.png`;
+eventGroupSelectElement.addEventListener('change', (evt) => {
+  eventTypeButtonIconElement.src = `img/icons/${evt.target.value}.png`;
 });

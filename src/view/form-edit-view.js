@@ -1,5 +1,4 @@
-import { makeCapLetter } from '../utils/utils.js';
-import { parseDate } from '../utils/date.js';
+import { capitalise } from '../utils/utils.js';
 
 // ЗДЕСЬ КОД ПОВТОРЯЕТСЯ НА 90% с формой создания точки
 // Оставляю пока в качестве чернового варианта для проверки, затем оставлю только форму создания
@@ -76,7 +75,7 @@ const createOfferTemplate = ({ id, title, price, isChecked = false} = {}) => (
 );
 
 // Собираем все сгенерированные офферы
-const createOffersSectionTemlate = (offers) => (
+const createOffersSectionTemplate = (offers) => (
   `<section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
@@ -90,8 +89,8 @@ const createOffersSectionTemlate = (offers) => (
 export const createFormEditTemplate = (point, destinations, allOffers) => {
   const {
     type,
-    dateFrom: dateFromObject,
-    dateTo: dateToObject,
+    dateFrom,
+    dateTo,
     destination,
     basePrice,
     offers: tripOffers,
@@ -111,13 +110,10 @@ export const createFormEditTemplate = (point, destinations, allOffers) => {
   });
 
   // Собираем список вариантов точке назначения для вставки в шаблон
-  const destinationList = destinations.map(({ name }) => `<option value="${name}"></option>`).join('');
-
-  const dateFrom = parseDate(dateFromObject);
-  const dateTo = parseDate(dateToObject);
+  const destinationListTemplate = destinations.map(({ name }) => `<option value="${name}"></option>`).join('');
 
   const eventTypeListTemplate = createEventTypeListTemplate();
-  const offersSectionTemlate = createOffersSectionTemlate(renderedOffers);
+  const offersSectionTemplate = createOffersSectionTemplate(renderedOffers);
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -141,7 +137,7 @@ export const createFormEditTemplate = (point, destinations, allOffers) => {
 
         <div class="event__field-group  event__field-group--destination">
           <label class="event__label  event__type-output" for="event-destination-1">
-            ${makeCapLetter(type)}
+            ${capitalise(type)}
           </label>
           <input
             class="event__input  event__input--destination"
@@ -151,7 +147,7 @@ export const createFormEditTemplate = (point, destinations, allOffers) => {
             value="${destination.name}"
             list="destination-list-1">
           <datalist id="destination-list-1">
-            ${destinationList}
+            ${destinationListTemplate}
           </datalist>
         </div>
 
@@ -194,7 +190,7 @@ export const createFormEditTemplate = (point, destinations, allOffers) => {
       </header>
       <section class="event__details">
 
-        ${offersSectionTemlate}
+        ${offersSectionTemplate}
 
         <section class="event__section  event__section--destination">
           <h3 class="event__section-title  event__section-title--destination">Destination</h3>
