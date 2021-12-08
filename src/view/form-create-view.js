@@ -1,3 +1,4 @@
+import { createElement } from '../render.js';
 import { capitalise } from '../utils/utils.js';
 
 // Шаблон для выбора типа точки маршрута из кружочка
@@ -102,7 +103,7 @@ const createPhotoContainerTemplate = (pictures) => {
 };
 
 // Функция создания шаблона формы редактирования точки
-export const createFormCreateTemplate = (point, destinations, allOffers) => {
+const createFormCreateTemplate = (point, destinations, allOffers) => {
   const {
     type,
     dateFrom,
@@ -215,3 +216,23 @@ export const createFormCreateTemplate = (point, destinations, allOffers) => {
     </form>
   </li>`;
 };
+
+export default class FormCreateView {
+  #element = null;
+
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
+    }
+
+    return this.#element;
+  }
+
+  get template() {
+    return createFormCreateTemplate();
+  }
+
+  removeElement() {
+    this.#element = null;
+  }
+}

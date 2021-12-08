@@ -1,6 +1,6 @@
+import { createElement } from '../render.js';
 import { capitalise } from '../utils/utils.js';
 import { formatPointDuration } from '../utils/date.js';
-
 
 // Генерируем один оффер
 const createOfferTemplate = ({ title, price } = {}) => (
@@ -18,7 +18,7 @@ const createEventOffersListTemplate = (offers) => (
   </ul>`
 );
 
-export const createPointTemplate = (point) => {
+const createPointTemplate = (point) => {
   const {
     type,
     dateFrom,
@@ -86,3 +86,23 @@ export const createPointTemplate = (point) => {
     </div>
   </li>`;
 };
+
+export default class TripPointView {
+  #element = null;
+
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
+    }
+
+    return this.#element;
+  }
+
+  get template() {
+    return createPointTemplate();
+  }
+
+  removeElement() {
+    this.#element = null;
+  }
+}

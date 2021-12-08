@@ -1,3 +1,4 @@
+import { createElement } from '../render.js';
 import { capitalise } from '../utils/utils.js';
 
 // ЗДЕСЬ КОД ПОВТОРЯЕТСЯ НА 90% с формой создания точки
@@ -86,7 +87,7 @@ const createOffersSectionTemplate = (offers) => (
 );
 
 // Функция создания шаблона формы редактирования точки
-export const createFormEditTemplate = (point, destinations, allOffers) => {
+const createFormEditTemplate = (point, destinations, allOffers) => {
   const {
     type,
     dateFrom,
@@ -200,3 +201,23 @@ export const createFormEditTemplate = (point, destinations, allOffers) => {
     </form>
   </li>`;
 };
+
+export default class FormEditView {
+  #element = null;
+
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
+    }
+
+    return this.#element;
+  }
+
+  get template() {
+    return createFormEditTemplate();
+  }
+
+  removeElement() {
+    this.#element = null;
+  }
+}
