@@ -1,7 +1,40 @@
-import dayjs from 'dayjs';
-import objectSupport from 'dayjs/plugin/objectSupport';
+import { parseDate } from '../utils/date.js';
 
-dayjs.extend(objectSupport);
+const POINT_TYPES = [
+  'bus',
+  'check-in',
+  'drive',
+  'flight',
+  'restaurant',
+  'ship',
+  'sightseeing',
+  'taxi',
+  'train',
+  'transport',
+];
+
+const OFFER_TITLES = [
+  // taxi
+  'Upgrade to a business class',
+  'Choose the radio station',
+  'Choose temperature',
+  'Drive quickly, I\'m in a hurry',
+  'Drive slowly',
+
+  // bus
+  'Infotainment system',
+  'Order meal',
+  'Choose seats',
+
+  // restaurant
+  'Choose live music',
+  'Choose VIP area',
+
+  // train
+  'Book a taxi at the arrival point',
+  'Order a breakfast',
+  'Wake up at a certain time',
+];
 
 const getRandomInteger = (a = 0, b = 1) => {
   const lower = Math.ceil(Math.min(a, b));
@@ -10,90 +43,129 @@ const getRandomInteger = (a = 0, b = 1) => {
   return Math.floor(lower + Math.random() * (upper - lower + 1));
 };
 
-const generateDescription = () => {
-  const fullText = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra. Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante. Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum. Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui. Sed sed nisi sed augue convallis suscipit in sed felis. Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.';
-  const descriptons = fullText.split('. ');
-  const randomIndex = getRandomInteger(0, descriptons.length - 1);
-
-  return descriptons[randomIndex];
-};
-
-const startDay = dayjs({
-  year: getRandomInteger(2022, 2024),
-  month: getRandomInteger(0, 11),
-  day: getRandomInteger(1, 30),
-  hour: getRandomInteger(0, 24),
-  minute: getRandomInteger(0, 60),
-});
-
-const createTimePoints = (count) => {
-  let points = [startDay];
-
-  for (let i = 0; i < count; i++) {
-    const nextTimePoint = points[i].add(getRandomInteger(5, 60), 'minute');
-    points = [...points, nextTimePoint];
-  }
-
-  return points;
-};
-
-const createCounter = () => {
-  let i = 0;
-  return () => i++;
-};
-
-const counter = createCounter();
-
-const generateTripPoint = (timePointsArray) => (
+// DESTINATION
+const generateDestination = (
   {
-    basePrice: getRandomInteger(20, 200),
-    dateFrom: `${timePointsArray[counter()].toJSON()}`,
-    dateTo: `${timePointsArray[counter() + 1].toJSON()}`,
-    // выражение counter() + 1 выполнено для быстрого построения цепочки времен
-    // когда время завершения предыдущего пункта является временем начала следующего
-    // это не верно с точки зрения что я перепрыгиваю через элемент массива, а не беру по порядку
-    // но так как это моки, то оставляю так. Данный поясняющий комментарий удалю позже.
-    destination: 'Hogwarts School',
-    id: '0',
-    isFavorite: Boolean(getRandomInteger(0, 1)),
-    offers: [
+    description = 'Racсoon description',
+    name = 'Racсoon City',
+  } = {}) => (
+  {
+    description,
+    name,
+    pictures: [
       {
-        type: 'taxi',
-        offers: [
-          {
-            id: 1,
-            title: 'Upgrade ',
-            price: 1
-          }, {
-            id: 2,
-            title: 'Choose the radio station',
-            price: 60
-          }
-        ]
+        src: `http://picsum.photos/248/152?r=${getRandomInteger(1, 10)}`,
+        description: 'picture Racсoon 1'
       },
       {
-        type: 'flight',
-        offers: [
-          {
-            id: 1,
-            title: 'Upgrade to a business class',
-            price: 120
-          }, {
-            id: 2,
-            title: 'Choose the radio station',
-            price: 60
-          }
-        ]
+        src: `http://picsum.photos/248/152?r=${getRandomInteger(1, 10)}`,
+        description: 'picture Racсoon 2'
+      },
+      {
+        src: `http://picsum.photos/248/152?r=${getRandomInteger(1, 10)}`,
+        description: 'picture Racсoon 3'
       }
-    ],
-    type: 'bus',
-    destinationInfo: {
-      description: generateDescription(),
-      photos: [],  // http://picsum.photos/248/152?r=случайное_число
+    ]
+  });
+
+export const destinations = [
+  generateDestination(),
+  generateDestination({ name: 'Moscow', description: 'Moscow description' }),
+  generateDestination({ name: 'Hogvarts', description: 'Hogvarts description' }),
+];
+
+// OFFERS
+// Функция адаптер: объект-словарь
+export const pointTypeToOffers = POINT_TYPES.reduce((map, type) => {
+  map[type] = [];
+  return map;
+}, {});
+
+const getRandomArrayItem = (items) => items[getRandomInteger(0, items.length - 1)];
+
+const generatePoorId = () => +String(Math.random()).slice(-5);
+
+const generateOffer = (
+  {
+    id = generatePoorId(),
+    title = getRandomArrayItem(OFFER_TITLES),
+    price = getRandomInteger(10, 100),
+  } = {}) => ({
+  id,
+  title,
+  price,
+});
+
+// Генерация офферов для моков
+const busOffers = pointTypeToOffers['bus'] = [
+  ...Array.from({ length: 2 }, generateOffer),
+  generateOffer({ id: 1, title: 'Wi-Fi', price: 100 }),
+];
+
+const checkInOffers = pointTypeToOffers['check-in'] = [
+  ...Array.from({ length: 2 }, generateOffer),
+  generateOffer({ id: 1, title: 'Wi-Fi', price: 50 }),
+];
+
+const driveOffers = pointTypeToOffers['drive'] = [
+  ...Array.from({ length: 2 }, generateOffer),
+  generateOffer({ id: 1, title: 'Pets', price: 30 }),
+];
+
+export const allOffers = (
+  [
+    {
+      type: 'bus',
+      offers: busOffers,
     },
-    isFuture: Boolean(getRandomInteger(0, 1)),
-    isPast: Boolean(getRandomInteger(0, 1)),
+    {
+      type: 'check-in',
+      offers: checkInOffers,
+    },
+    {
+      type: 'drive',
+      offers: driveOffers,
+    }
+  ]
+);
+
+// TRIP POINTS
+const generateTripPoint = (
+  {
+    dateFromString,
+    dateToString
+  } ={}) => (
+  {
+    basePrice: getRandomInteger(20, 200),
+    dateFrom: parseDate(dateFromString),
+    dateTo: parseDate(dateToString),
+    destination: destinations[0],
+    id: '0',
+    isFavorite: Boolean(getRandomInteger(0, 1)),
+    type: 'bus',
+    offers: [
+      generateOffer({ id: 1, title: 'Wi-Fi', price: 100 }),
+    ],
   }
 );
 
-export { createTimePoints, generateTripPoint };
+export const tripPoints = [
+  generateTripPoint(
+    {
+      dateFromString: '2019-07-10T22:55:56.845Z',
+      dateToString: '2019-07-11T11:22:13.375Z',
+    }
+  ),
+  generateTripPoint(
+    {
+      dateFromString: '2019-07-11T11:22:13.375Z',
+      dateToString: '2019-07-11T17:54:22.854Z',
+    }
+  ),
+  generateTripPoint(
+    {
+      dateFromString: '2019-07-11T17:54:22.854Z',
+      dateToString: '2019-07-13T08:03:00.375Z',
+    }
+  ),
+];

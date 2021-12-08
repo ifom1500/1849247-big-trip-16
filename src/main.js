@@ -8,8 +8,7 @@ import { createEventsListTemplate } from './view/events-list-view.js';
 import { createNewEventButtonTemplate } from './view/new-event-button-view.js';
 import { createTripEventsTemplate } from './view/trip-events-view.js';
 
-import { createTimePoints, generateTripPoint } from './mock/trip-point.js';
-import { generateDestination } from './mock/destination.js';
+import { destinations, tripPoints, allOffers } from './mock/trip-point.js';
 
 const POINT_COUNT = 3;
 
@@ -27,13 +26,6 @@ const navigationElement = headerElement.querySelector('.trip-controls__navigatio
 
 const mainElement = document.querySelector('.page-main');
 const mainContainerElement = mainElement.querySelector('.page-main__container');
-
-// МОКИ
-// формирование моков
-const timePoints = createTimePoints(POINT_COUNT * 2);
-const tripPoints = Array.from({ length: POINT_COUNT }, () => generateTripPoint(timePoints));
-
-const destinations = Array.from({ length: 3 }, generateDestination)
 
 // Функция отрисовки
 const renderTemplate = (container, template, place) => {
@@ -66,10 +58,19 @@ renderTemplate(tripEventsElement, createEventsListTemplate(), RenderPosition.BEF
 const tripEventsListElement = mainElement.querySelector('.trip-events__list');
 
 // Формы редактирования и создания точек
-renderTemplate(tripEventsListElement, createFormEditTemplate(tripPoints[0]), RenderPosition.AFTER_BEGIN);
-renderTemplate(tripEventsListElement, createFormCreateTemplate(destinations[0]), RenderPosition.BEFORE_END);
+renderTemplate(tripEventsListElement, createFormEditTemplate(tripPoints[0], destinations, allOffers), RenderPosition.AFTER_BEGIN);
+renderTemplate(tripEventsListElement, createFormCreateTemplate(tripPoints[0], destinations, allOffers), RenderPosition.BEFORE_END);
 
 // Точки маршрута
-for (let i = 1; i < POINT_COUNT; i++) {
+for (let i = 0; i < POINT_COUNT; i++) {
   renderTemplate(tripEventsListElement, createPointTemplate(tripPoints[i]), RenderPosition.BEFORE_END);
 }
+
+// Подписка на события
+const eventGroupSelect = mainContainerElement.querySelector('.event__type-group');
+const eventTypeBtn = mainContainerElement.querySelector('.event__type-btn');
+const eventTypeBtnIcon = eventTypeBtn.querySelector('.event__type-icon');
+
+eventGroupSelect.addEventListener('change', (evt) => {
+  eventTypeBtnIcon.src = `img/icons/${evt.target.value}.png`;
+});

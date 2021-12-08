@@ -1,5 +1,8 @@
-import dayjs from 'dayjs';
+import { makeCapLetter } from '../utils/utils.js';
+import { parseDate } from '../utils/date.js';
 
+// Шаблон для выбора типа точки маршрута из кружочка
+// ["taxi", "bus", "train", "ship", "drive", "flight", "check-in", "sightseeing", "restaurant"]
 const createEventTypeListTemplate = () => (
   `<fieldset class="event__type-group">
     <legend class="visually-hidden">Event type</legend>
@@ -51,78 +54,87 @@ const createEventTypeListTemplate = () => (
   </fieldset>`
 );
 
-const createOffersSectionTemlate = () => (
+// Генерируем один оффер
+const createOfferTemplate = ({ id, title, price, isChecked = false } = {}) => (
+  `<div class="event__offer-selector">
+    <input
+      class="event__offer-checkbox  visually-hidden"
+      id="${id}"
+      type="checkbox"
+      name="${title}"
+      ${isChecked ? 'checked' : ''}
+    >
+    <label class="event__offer-label" for="${id}">
+      <span class="event__offer-title">${title}</span>
+      &plus;&euro;&nbsp;
+      <span class="event__offer-price">${price}</span>
+    </label>
+  </div>`
+);
+
+// Собираем все сгенерированные офферы
+const createOffersSectionTemlate = (offers) => (
   `<section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
     <div class="event__available-offers">
-      <div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" checked>
-        <label class="event__offer-label" for="event-offer-luggage-1">
-          <span class="event__offer-title">Add luggage</span>
-          &plus;&euro;&nbsp;
-          <span class="event__offer-price">30</span>
-        </label>
-      </div>
-
-      <div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-comfort-1" type="checkbox" name="event-offer-comfort" checked>
-        <label class="event__offer-label" for="event-offer-comfort-1">
-          <span class="event__offer-title">Switch to comfort class</span>
-          &plus;&euro;&nbsp;
-          <span class="event__offer-price">100</span>
-        </label>
-      </div>
-
-      <div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-meal-1" type="checkbox" name="event-offer-meal">
-        <label class="event__offer-label" for="event-offer-meal-1">
-          <span class="event__offer-title">Add meal</span>
-          &plus;&euro;&nbsp;
-          <span class="event__offer-price">15</span>
-        </label>
-      </div>
-
-      <div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-seats-1" type="checkbox" name="event-offer-seats">
-        <label class="event__offer-label" for="event-offer-seats-1">
-          <span class="event__offer-title">Choose seats</span>
-          &plus;&euro;&nbsp;
-          <span class="event__offer-price">5</span>
-        </label>
-      </div>
-
-      <div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-train-1" type="checkbox" name="event-offer-train">
-        <label class="event__offer-label" for="event-offer-train-1">
-          <span class="event__offer-title">Travel by train</span>
-          &plus;&euro;&nbsp;
-          <span class="event__offer-price">40</span>
-        </label>
-      </div>
+      ${offers.map(createOfferTemplate).join('')}
     </div>
   </section>`
 );
 
-export const createFormCreateTemplate = (destination) => {
+// ИЗОБРАЖЕНИЯ
+// Генерируем одно изображение
+const createPhotoItemTemplate = ({ src, description } = {}) => `<img class="event__photo" src=${src} alt=${description}>`;
 
+// Собираем все изображение в список. Если нет изображений - не показываем блок
+const createPhotoContainerTemplate = (pictures) => {
+  if (pictures.length) {
+    return (
+      `<div class="event__photos-container">
+        <div class="event__photos-tape">
+          ${pictures.map(createPhotoItemTemplate).join('')}
+        </div>
+      </div>`
+    );
+  }
+
+  return '';
+};
+
+// Функция создания шаблона формы редактирования точки
+export const createFormCreateTemplate = (point, destinations, allOffers) => {
   const {
-    description,
-    name,
-    pictures,
-  } = destination;
+    type,
+    dateFrom: dateFromObject,
+    dateTo: dateToObject,
+    destination,
+    basePrice,
+    offers: tripOffers,
+  } = point;
 
-  const defaultSettings = {
-    basePrice: 0,
-    dateFrom: dayjs(),
-    dateTo: dayjs(),
-    destination: 'Defaul City',
-    type: 'taxi',
-    description: 'Defaul description',
-  };
+  const renderedOffers = [];
+
+  // Сравниваем общий список офферов с офферами, указанными для точки
+  // в пустой массив renderedOffers пушим объект - оффер и признак isChecked
+  allOffers.forEach((offer) => {
+    const isChecked = tripOffers.some(({ id }) => id === offer.id);
+
+    renderedOffers.push({
+      ...offer,
+      isChecked,
+    });
+  });
+
+  // Собираем список вариантов точке назначения для вставки в шаблон
+  const destinationList = destinations.map(({ name }) =>
+    `<option value="${name}"></option>`).join('');
+
+  const dateFrom = parseDate(dateFromObject);
+  const dateTo = parseDate(dateToObject);
 
   const eventTypeListTemplate = createEventTypeListTemplate();
-  const offersSectionTemlate = createOffersSectionTemlate();
+  const offersSectionTemlate = createOffersSectionTemlate(renderedOffers);
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -134,32 +146,28 @@ export const createFormCreateTemplate = (destination) => {
               class="event__type-icon"
               width="17"
               height="17"
-              src="img/icons/${defaultSettings.type}.png"
+              src="img/icons/${type}.png"
               alt="Event type icon">
           </label>
           <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
           <div class="event__type-list">
-            ${eventTypeListTemplate}
+            ${eventTypeListTemplate};
           </div>
         </div>
 
         <div class="event__field-group  event__field-group--destination">
           <label class="event__label  event__type-output" for="event-destination-1">
-            ${defaultSettings.type[0].toUpperCase()}${defaultSettings.type.slice(1)}
+            ${makeCapLetter(type)}
           </label>
           <input
             class="event__input  event__input--destination"
-            id="event-destination-1"
-            type="text"
+            id="event-destination-1" type="text"
             name="event-destination"
-            value="${name}"
+            value="${destination.name}"
             list="destination-list-1">
           <datalist id="destination-list-1">
-            <!-- TODO: добавить все DESTINATIONS из приходящего объекта -->
-            <option value="${name[0]}"></option>
-            <option value="${name[1]}"></option>
-            <option value="${name[2]}"></option>
+            ${destinationList}
           </datalist>
         </div>
 
@@ -170,7 +178,7 @@ export const createFormCreateTemplate = (destination) => {
             id="event-start-time-1"
             type="text"
             name="event-start-time"
-            value="${defaultSettings.dateFrom.format('DD/MM/YY HH:mm')}">
+            value="${dateFrom.format('DD/MM/YY HH:mm')}">
           &mdash;
           <label class="visually-hidden" for="event-end-time-1">To</label>
           <input
@@ -178,7 +186,7 @@ export const createFormCreateTemplate = (destination) => {
             id="event-end-time-1"
             type="text"
             name="event-end-time"
-            value="${defaultSettings.dateTo.format('DD/MM/YY HH:mm')}">
+            value="${dateTo.format('DD/MM/YY HH:mm')}">
         </div>
 
         <div class="event__field-group  event__field-group--price">
@@ -191,7 +199,7 @@ export const createFormCreateTemplate = (destination) => {
             id="event-price-1"
             type="text"
             name="event-price"
-            value="${defaultSettings.basePrice}">
+            value="${basePrice}">
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -199,20 +207,13 @@ export const createFormCreateTemplate = (destination) => {
       </header>
       <section class="event__details">
 
-        ${offersSectionTemlate};
+        ${offersSectionTemlate}
 
         <section class="event__section  event__section--destination">
           <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-          <p class="event__destination-description">${description}</p>
+          <p class="event__destination-description">${destination.description}</p>
 
-          <div class="event__photos-container">
-            <div class="event__photos-tape">
-              <!-- TODO: добавить все PICTURES из приходящего объекта или не показывать -->
-              <img class="event__photo" src="${pictures[0].src}" alt="${pictures[0].description}">
-              <img class="event__photo" src="${pictures[1].src}" alt="${pictures[0].description}">
-              <img class="event__photo" src="${pictures[2].src}" alt="${pictures[0].description}">
-            </div>
-          </div>
+          ${createPhotoContainerTemplate(destination.pictures)}
         </section>
       </section>
     </form>

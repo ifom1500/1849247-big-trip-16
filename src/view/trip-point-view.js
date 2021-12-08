@@ -1,34 +1,35 @@
-import dayjs from 'dayjs';
-import duration from'dayjs/plugin/duration';
-dayjs.extend(duration);
+import { makeCapLetter } from '../utils/utils.js';
+import { formatPointDuration } from '../utils/date.js';
+
+
+// Генерируем один оффер
+const createOfferTemplate = ({ title, price } = {}) => (
+  `<li class="event__offer">
+    <span class="event__offer-title">${title}</span>
+    &plus;&euro;&nbsp;
+    <span class="event__offer-price">${price}</span>
+  </li>`
+);
+
+// Собираем в список все офферы точки
+const createEventOffersListTemplate = (offers) => (
+  `<ul class="event__selected-offers">
+    ${offers.map(createOfferTemplate).join('')}
+  </ul>`
+);
 
 export const createPointTemplate = (point) => {
   const {
     type,
-    dateFrom: dateFromObject,
-    dateTo: dateToObject,
+    dateFrom,
+    dateTo,
     destination,
     basePrice,
     offers,
     isFavorite
   } = point;
 
-  const dateFrom = dayjs(dateFromObject);
-  const dateTo = dayjs(dateToObject);
-
-  const showDuration = () => {
-    const eventDuration = dayjs.duration(dateTo.diff(dateFrom));
-
-    if (eventDuration.days() === 0 && eventDuration.hours() === 0) {
-      return eventDuration.format('mm[M]');
-    }
-
-    if (eventDuration.days() === 0 && eventDuration.hours() > 0) {
-      return eventDuration.format('HH[H] mm[M]');
-    }
-
-    return eventDuration.format('DD[D] HH[H] mm[M]');
-  };
+  const pointDuration = formatPointDuration(dateTo - dateFrom);
 
   const starClassName = isFavorite
     ? 'event__favorite-btn--active'
@@ -38,7 +39,7 @@ export const createPointTemplate = (point) => {
     <div class="event">
       <time
         class="event__date"
-        datetime="${dateFrom.format('DD-MM-YYYY')}">${dateFrom.format('MMM D')}</time>
+        datetime="${dateFrom.toISOString()}">${dateFrom.format('MMM D')}</time>
       <div class="event__type">
         <img
           class="event__type-icon"
@@ -47,18 +48,18 @@ export const createPointTemplate = (point) => {
           src="img/icons/${type}.png"
           alt="Event type icon">
       </div>
-      <h3 class="event__title">${type[0].toUpperCase()}${type.slice(1)} ${destination}</h3>
+      <h3 class="event__title">${makeCapLetter(type)} ${destination.name}</h3>
       <div class="event__schedule">
         <p class="event__time">
           <time
             class="event__start-time"
-            datetime="${dateFrom}">${dateFrom.format('HH:mm')}</time>
+            datetime="${dateFrom.toISOString()}">${dateFrom.format('HH:mm')}</time>
           &mdash;
           <time
             class="event__end-time"
-            datetime="${dateTo}">${dateTo.format('HH:mm')}</time>
+            datetime="${dateTo.toISOString()}">${dateTo.format('HH:mm')}</time>
         </p>
-        <p class="event__duration">${showDuration()}</p>
+        <p class="event__duration">${pointDuration}</p>
       </div>
       <p class="event__price">
         &euro;&nbsp;
@@ -66,14 +67,9 @@ export const createPointTemplate = (point) => {
       </p>
 
       <h4 class="visually-hidden">Offers:</h4>
-      <ul class="event__selected-offers">
-        <li class="event__offer">
-          <!-- TODO: пока не понимаю как будут присваиваться офферы в point -->
-          <span class="event__offer-title">${offers[0].offers[0].title}</span>
-          &plus;&euro;&nbsp;
-          <span class="event__offer-price">${offers[0].offers[0].price}</span>
-        </li>
-      </ul>
+
+      ${createEventOffersListTemplate(offers)}
+
       <button
         class="event__favorite-btn ${starClassName}"
         type="button">
