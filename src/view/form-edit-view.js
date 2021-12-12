@@ -1,3 +1,4 @@
+import { allOffers } from '../mock/trip-point.js';
 import { createElement } from '../render.js';
 import { capitalise } from '../utils/utils.js';
 
@@ -87,7 +88,7 @@ const createOffersSectionTemplate = (offers) => (
 );
 
 // Функция создания шаблона формы редактирования точки
-const createFormEditTemplate = (point, destinations, allOffers) => {
+const createFormEditTemplate = (point, destinations) => {
   const {
     type,
     dateFrom,
@@ -204,6 +205,13 @@ const createFormEditTemplate = (point, destinations, allOffers) => {
 
 export default class FormEditView {
   #element = null;
+  #point = null;
+  #destination = null;
+
+  constructor(point, destination) {
+    this.#point = point;
+    this.#destination = destination;
+  }
 
   get element() {
     if (!this.#element) {
@@ -214,7 +222,7 @@ export default class FormEditView {
   }
 
   get template() {
-    return createFormEditTemplate();
+    return createFormEditTemplate(this.#point, this.#destination);
   }
 
   removeElement() {

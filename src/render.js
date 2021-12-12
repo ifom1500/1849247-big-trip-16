@@ -6,12 +6,26 @@ const RenderPosition = {
   AFTER_END: 'afterend',
 };
 
-const renderTemplate = (container, template, place) => {
-  container.insertAdjacentHTML(place, template);
-};
+// TODO: разобраться почему такая функция не работает
+// const renderElement = (container, element, place) => {
+//   container.insertAdjacentHTML(place, element);
+// };
 
-const renderElement = (container, element, place) => {
-  container.insertAdjacentHTML(place, element);
+const render = (container, element, place) => {
+  switch (place) {
+    case RenderPosition.BEFORE_BEGIN:
+      container.before(element);
+      break;
+    case RenderPosition.AFTER_BEGIN:
+      container.prepend(element);
+      break;
+    case RenderPosition.BEFORE_END:
+      container.append(element);
+      break;
+    case RenderPosition.AFTER_END:
+      container.after(element);
+      break;
+  }
 };
 
 const createElement = (template) => {
@@ -21,4 +35,4 @@ const createElement = (template) => {
   return newElement.firstChild; // 3
 };
 
-export { RenderPosition, renderTemplate, renderElement, createElement };
+export { RenderPosition, render, createElement };

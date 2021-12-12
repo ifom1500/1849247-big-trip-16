@@ -18,6 +18,7 @@ const createEventOffersListTemplate = (offers) => (
   </ul>`
 );
 
+// Создать шаблон разметки точки
 const createPointTemplate = (point) => {
   const {
     type,
@@ -89,6 +90,11 @@ const createPointTemplate = (point) => {
 
 export default class TripPointView {
   #element = null;
+  #point = null;
+
+  constructor(point) {
+    this.#point = point;
+  }
 
   get element() {
     if (!this.#element) {
@@ -99,7 +105,7 @@ export default class TripPointView {
   }
 
   get template() {
-    return createPointTemplate();
+    return createPointTemplate(this.#point);
   }
 
   removeElement() {
