@@ -1,4 +1,4 @@
-import { allOffers } from '../mock/trip-point.js';
+// import { allOffers } from '../mock/trip-point.js';
 import { createElement } from '../render.js';
 import { capitalise } from '../utils/utils.js';
 
@@ -104,7 +104,7 @@ const createPhotoContainerTemplate = (pictures) => {
 };
 
 // Функция создания шаблона формы редактирования точки
-const createFormCreateTemplate = (point, destinations) => {
+const createFormCreateTemplate = (point, destinations, allOffers) => {
   const {
     type,
     dateFrom,
@@ -114,16 +114,17 @@ const createFormCreateTemplate = (point, destinations) => {
     offers: tripOffers,
   } = point;
 
+  // находим объект с соответствующим типом
+  const searchOffers = (offers) => offers.find((item) => item.type === type);
+  const typeOffers = searchOffers(allOffers);
+
+  // находим офферы, присутствующие в объекте точки путешествия
   const renderedOffers = [];
 
-  // Сравниваем общий список офферов с офферами, указанными для точки
-  // в пустой массив renderedOffers пушим объект - оффер и признак isChecked
-  allOffers.forEach((offer) => {
-    const isChecked = tripOffers.some(({ id }) => id === offer.id);
-
+  typeOffers.offers.forEach((offer) => {
     renderedOffers.push({
       ...offer,
-      isChecked,
+      isChecked: tripOffers.some(({ id }) => id === offer.id),
     });
   });
 
@@ -222,10 +223,12 @@ export default class FormCreateView {
   #element = null;
   #point = null;
   #destination = null;
+  #allOffers = null;
 
-  constructor(point, destination) {
+  constructor(point, destination, offers) {
     this.#point = point;
     this.#destination = destination;
+    this.#allOffers = offers;
   }
 
   get element() {
@@ -237,7 +240,7 @@ export default class FormCreateView {
   }
 
   get template() {
-    return createFormCreateTemplate(this.#point, this.#destination);
+    return createFormCreateTemplate(this.#point, this.#destination, this.#allOffers);
   }
 
   removeElement() {

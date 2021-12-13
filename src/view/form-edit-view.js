@@ -1,4 +1,4 @@
-import { allOffers } from '../mock/trip-point.js';
+// import { allOffers } from '../mock/trip-point.js';
 import { createElement } from '../render.js';
 import { capitalise } from '../utils/utils.js';
 
@@ -88,7 +88,7 @@ const createOffersSectionTemplate = (offers) => (
 );
 
 // Функция создания шаблона формы редактирования точки
-const createFormEditTemplate = (point, destinations) => {
+const createFormEditTemplate = (point, destinations, allOffers) => {
   const {
     type,
     dateFrom,
@@ -98,11 +98,16 @@ const createFormEditTemplate = (point, destinations) => {
     offers: tripOffers,
   } = point;
 
+  console.log(allOffers);
+
+  // находим объект с соответствующим типом
+  const searchOffers = (offers) => offers.find((item) => item.type === type);
+  const typeOffers = searchOffers(allOffers);
+
+  // находим офферы, присутствующие в объекте точки путешествия
   const renderedOffers = [];
 
-  // В пустой массив renderedOffers пушим объект - оффер и признак isChecked
-  // который возвращает булево значение есть ли n-ый оффер среди всего списка офферов
-  allOffers.forEach((offer) => {
+  typeOffers.offers.forEach((offer) => {
     renderedOffers.push({
       ...offer,
       isChecked: tripOffers.some(({ id }) => id === offer.id),
@@ -205,10 +210,12 @@ export default class FormEditView {
   #element = null;
   #point = null;
   #destination = null;
+  #allOffers = null;
 
-  constructor(point, destination) {
+  constructor(point, destination, offers) {
     this.#point = point;
     this.#destination = destination;
+    this.#allOffers = offers;
   }
 
   get element() {
@@ -220,7 +227,7 @@ export default class FormEditView {
   }
 
   get template() {
-    return createFormEditTemplate(this.#point, this.#destination);
+    return createFormEditTemplate(this.#point, this.#destination, this.#allOffers);
   }
 
   removeElement() {
