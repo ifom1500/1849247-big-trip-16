@@ -100,14 +100,12 @@ const createFormEditTemplate = (point, destinations) => {
 
   const renderedOffers = [];
 
-  // Сравниваем общий список офферов с офферами, указанными для точки
-  // в пустой массив renderedOffers пушим объект - оффер и признак isChecked
+  // В пустой массив renderedOffers пушим объект - оффер и признак isChecked
+  // который возвращает булево значение есть ли n-ый оффер среди всего списка офферов
   allOffers.forEach((offer) => {
-    const isChecked = tripOffers.some(({ id }) => id === offer.id);
-
     renderedOffers.push({
       ...offer,
-      isChecked,
+      isChecked: tripOffers.some(({ id }) => id === offer.id),
     });
   });
 

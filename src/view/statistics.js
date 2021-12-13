@@ -16,6 +16,5 @@ export const createStatisticsTemplate = () => (
     <div class="statistics__item">
       <canvas class="statistics__chart" id="time" width="900"></canvas>
     </div>
-  </section>
-  `
+  </section>`
 );
