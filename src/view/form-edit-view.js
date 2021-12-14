@@ -88,31 +88,25 @@ const createOffersSectionTemplate = (offers) => (
 );
 
 // Функция создания шаблона формы редактирования точки
-const createFormEditTemplate = (point, destinations, allOffers) => {
+const createFormEditTemplate = (point, destinations, sameTypeOffers) => {
   const {
     type,
     dateFrom,
     dateTo,
     destination,
     basePrice,
-    offers: tripOffers,
+    offers: pointOffers,
   } = point;
 
-  console.log(allOffers);
-
-  // находим объект с соответствующим типом
-  const searchOffers = (offers) => offers.find((item) => item.type === type);
-  const typeOffers = searchOffers(allOffers);
-
-  // находим офферы, присутствующие в объекте точки путешествия
   const renderedOffers = [];
 
-  typeOffers.offers.forEach((offer) => {
+  sameTypeOffers.forEach((offer) => {
     renderedOffers.push({
       ...offer,
-      isChecked: tripOffers.some(({ id }) => id === offer.id),
+      isChecked: pointOffers.some(({ id }) => id === offer.id),
     });
   });
+
 
   // Собираем список вариантов точке назначения для вставки в шаблон
   const destinationListTemplate = destinations.map(({ name }) => `<option value="${name}"></option>`).join('');
@@ -226,8 +220,13 @@ export default class FormEditView {
     return this.#element;
   }
 
+  // как на сервере: массив
+  getSameTypeOffers(offers) {
+    return offers.find((item) => item.type === this.#point.type).offers || [];
+  }
+
   get template() {
-    return createFormEditTemplate(this.#point, this.#destination, this.#allOffers);
+    return createFormEditTemplate(this.#point, this.#destination, this.getSameTypeOffers(this.#allOffers));
   }
 
   removeElement() {
