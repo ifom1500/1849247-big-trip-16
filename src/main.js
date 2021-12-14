@@ -13,7 +13,7 @@ import TripEventsView from './view/trip-events-view.js';
 import EmptyListView from './view/empty-list-view.js';
 
 import { isEscapeEvent } from './utils/utils.js';
-import { destinations, tripPoints, allOffers } from './mock/trip-point.js';
+import { destinations, tripPoints, AllOffersMap } from './mock/trip-point.js';
 
 const POINT_COUNT = 3;
 
@@ -27,7 +27,7 @@ const mainContainerElement = mainElement.querySelector('.page-main__container');
 
 const renderPoint = (eventsListElement, point) => {
   const pointComponent = new TripPointView(point);
-  const pointEditComponent = new FormEditView(point, destinations, allOffers);
+  const pointEditComponent = new FormEditView(point, destinations, AllOffersMap);
 
   // Замена точки на форму и обратно
   const replacePointToForm = () => {

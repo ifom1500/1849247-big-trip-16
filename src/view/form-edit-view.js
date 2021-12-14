@@ -204,12 +204,12 @@ export default class FormEditView {
   #element = null;
   #point = null;
   #destination = null;
-  #allOffers = null;
+  #allOffersMap = null;
 
   constructor(point, destination, offers) {
     this.#point = point;
     this.#destination = destination;
-    this.#allOffers = offers;
+    this.#allOffersMap = offers;
   }
 
   get element() {
@@ -220,13 +220,8 @@ export default class FormEditView {
     return this.#element;
   }
 
-  // как на сервере: массив
-  getSameTypeOffers(offers) {
-    return offers.find((item) => item.type === this.#point.type).offers || [];
-  }
-
   get template() {
-    return createFormEditTemplate(this.#point, this.#destination, this.getSameTypeOffers(this.#allOffers));
+    return createFormEditTemplate(this.#point, this.#destination, this.#allOffersMap[this.#point.type] || []);
   }
 
   removeElement() {

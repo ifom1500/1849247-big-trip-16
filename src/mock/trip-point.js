@@ -75,11 +75,6 @@ export const destinations = [
 ];
 
 // OFFERS
-// Функция адаптер: объект-словарь
-export const pointTypeToOffers = POINT_TYPES.reduce((map, type) => {
-  map[type] = [];
-  return map;
-}, {});
 
 const getRandomArrayItem = (items) => items[getRandomInteger(0, items.length - 1)];
 
@@ -96,38 +91,45 @@ const generateOffer = (
   price,
 });
 
-// Генерация офферов для моков
-const busOffers = pointTypeToOffers['bus'] = [
-  ...Array.from({ length: 2 }, generateOffer),
-  generateOffer({ id: 1, title: 'Wi-Fi', price: 100 }),
-];
-
-const checkInOffers = pointTypeToOffers['check-in'] = [
-  ...Array.from({ length: 2 }, generateOffer),
-  generateOffer({ id: 1, title: 'Wi-Fi', price: 50 }),
-];
-
-const driveOffers = pointTypeToOffers['drive'] = [
-  ...Array.from({ length: 2 }, generateOffer),
-  generateOffer({ id: 1, title: 'Pets', price: 30 }),
-];
-
-export const allOffers = (
+// Имитация массива с сервера
+const allOffers = (
   [
     {
       type: 'bus',
-      offers: busOffers,
+      offers: [
+        ...Array.from({ length: 2 }, generateOffer),
+        generateOffer({ id: 1, title: 'Video guide', price: 100 }),
+      ],
     },
     {
       type: 'check-in',
-      offers: checkInOffers,
+      offers: [
+        ...Array.from({ length: 2 }, generateOffer),
+        generateOffer({ id: 1, title: 'Wi-Fi', price: 100 }),
+      ],
     },
     {
       type: 'drive',
-      offers: driveOffers,
-    }
+      offers: [
+        ...Array.from({ length: 2 }, generateOffer),
+        generateOffer({ id: 1, title: 'Pet transport', price: 100 }),
+      ],
+    },
+    {
+      type: 'train',
+      offers: [
+        ...Array.from({ length: 2 }, generateOffer),
+        generateOffer({ id: 1, title: 'Anakom', price: 100 }),
+      ],
+    },
   ]
 );
+
+// Функция адаптер: объект-словарь
+export const AllOffersMap = allOffers.reduce((map, item) => {
+  map[item.type] = item.offers;
+  return map;
+}, {});
 
 // TRIP POINTS
 const generateTripPoint = (
