@@ -1,18 +1,5 @@
 import { parseDate } from '../utils/date.js';
 
-const POINT_TYPES = [
-  'bus',
-  'check-in',
-  'drive',
-  'flight',
-  'restaurant',
-  'ship',
-  'sightseeing',
-  'taxi',
-  'train',
-  'transport',
-];
-
 const OFFER_TITLES = [
   // taxi
   'Upgrade to a business class',
