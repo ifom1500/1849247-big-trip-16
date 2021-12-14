@@ -87,32 +87,32 @@ const createOffersSectionTemplate = (offers) => (
   </section>`
 );
 
+const getRenderedWithCheckboxOffers = (offersToRender, offersFromPoint) => {
+  const renderedOffers = offersToRender.reduce((array, offer) => {
+    array.push({
+      ...offer,
+      isChecked: offersFromPoint.some(({ id }) => id === offer.id),
+    });
+    return array;
+  }, []);
+
+  return renderedOffers;
+};
+
 // Функция создания шаблона формы редактирования точки
-const createFormEditTemplate = (point, destinations, sameTypeOffers) => {
+const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers) => {
   const {
     type,
     dateFrom,
     dateTo,
     destination,
     basePrice,
-    offers: pointOffers,
   } = point;
-
-  const renderedOffers = [];
-
-  sameTypeOffers.forEach((offer) => {
-    renderedOffers.push({
-      ...offer,
-      isChecked: pointOffers.some(({ id }) => id === offer.id),
-    });
-  });
-
 
   // Собираем список вариантов точке назначения для вставки в шаблон
   const destinationListTemplate = destinations.map(({ name }) => `<option value="${name}"></option>`).join('');
-
   const eventTypeListTemplate = createEventTypeListTemplate();
-  const offersSectionTemplate = createOffersSectionTemplate(renderedOffers);
+  const offersSectionTemplate = createOffersSectionTemplate(renderedWithCheckboxOffers);
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -221,7 +221,11 @@ export default class FormEditView {
   }
 
   get template() {
-    return createFormEditTemplate(this.#point, this.#destination, this.#allOffersMap[this.#point.type] || []);
+    return createFormEditTemplate (
+      this.#point,
+      this.#destination,
+      getRenderedWithCheckboxOffers(this.#allOffersMap[this.#point.type] || [], this.#point.offers)
+    );
   }
 
   removeElement() {
