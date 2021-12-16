@@ -5,14 +5,14 @@ import NewEventButtonView from './view/new-event-button-view.js';
 import FiltersView from './view/filters-view.js';
 
 import SortingView from './view/sorting-view.js';
-import FormEditView from './view/form-edit-view.js';
-// import FormCreateView from './view/form-create-view.js'; // пока не используем
+import FormCreateEditView from './view/form-create-edit-view.js';
 import TripPointView from './view/trip-point-view.js';
 import EventsListView from './view/events-list-view.js';
 import TripEventsView from './view/trip-events-view.js';
 import EmptyListView from './view/empty-list-view.js';
 
 import { isEscapeEvent } from './utils/utils.js';
+import { parseDate } from './utils/date.js';
 import { destinations, tripPoints, AllOffersMap } from './mock/trip-point.js';
 
 const POINT_COUNT = 3;
@@ -25,9 +25,52 @@ const navigationElement = headerElement.querySelector('.trip-controls__navigatio
 const mainElement = document.querySelector('.page-main');
 const mainContainerElement = mainElement.querySelector('.page-main__container');
 
-const renderPoint = (eventsListElement, point) => {
+// Default Settings для точки
+// Набросок для дефолтных значений новой точки
+// Оставил моковый массив destinations, чтобы увидеть отображаются ли картинки
+const DEFAULT_POINT = {
+  basePrice: 0,
+  dateFrom: parseDate(),
+  dateTo: parseDate(),
+  destination: {
+    description: 'Your description',
+    name: 'Your destination',
+    pictures: [
+      {
+        description: 'picture Racсoon 1',
+        src: 'http://picsum.photos/248/152?r=1',
+      },
+      {
+        description: 'picture Racсoon 2',
+        src: 'http://picsum.photos/248/152?r=2',
+      },
+      {
+        description: 'picture Racсoon 3',
+        src: 'http://picsum.photos/248/152?r=3',
+      },
+      {
+        description: 'picture Racсoon 4',
+        src: 'http://picsum.photos/248/152?r=4',
+      }
+    ],
+  },
+  id: '0',
+  isFavorite: false,
+  type: 'bus',
+  offers: [
+    {type: 'bus', offers: [{ id: 1, title: 'Video guide', price: 100 }]}
+  ],
+};
+
+const Mode = {
+  CREATE_MODE: true,
+  EDIT_MODE: false,
+};
+
+// РЕНДЕР (родитель, точка)
+const renderPoint = (eventsListElement, point, renderPosition = RenderPosition.BEFORE_END, mode = Mode.EDIT_MODE) => {
   const pointComponent = new TripPointView(point);
-  const pointEditComponent = new FormEditView(point, destinations, AllOffersMap);
+  const pointEditComponent = new FormCreateEditView(point, destinations, AllOffersMap, mode);
 
   // Замена точки на форму и обратно
   const replacePointToForm = () => {
@@ -63,12 +106,25 @@ const renderPoint = (eventsListElement, point) => {
     document.removeEventListener('keydown', onEscKeyDown);
   });
 
-  render(eventsListElement, pointComponent.element, RenderPosition.BEFORE_END);
+  if (mode) {
+    render(eventsListElement, pointEditComponent.element, renderPosition);
+  } else {
+    render(eventsListElement, pointComponent.element, renderPosition);
+  }
 };
 
+// Создание компонентов
+const tripEventsComponent = new TripEventsView();
+const eventsListComponent = new EventsListView();
+
 // HEADER ===============================================
-// Кнопка Новое событие
-render(tripMainElement, new NewEventButtonView().element, RenderPosition.BEFORE_END);
+// КНОПКА
+const newEventButton = new NewEventButtonView();
+render(tripMainElement, newEventButton.element, RenderPosition.BEFORE_END);
+
+newEventButton.element.addEventListener('click', () => {
+  renderPoint(eventsListComponent.element, DEFAULT_POINT, RenderPosition.AFTER_BEGIN, Mode.CREATE_MODE);
+});
 
 // Меню
 render(navigationElement, new MenuView().element, RenderPosition.BEFORE_END);
@@ -80,8 +136,6 @@ render(tripControlsElement, new FiltersView().element, RenderPosition.BEFORE_END
 
 // MAIN ===============================================
 // Контейнер tripEvents
-const tripEventsComponent = new TripEventsView();
-
 if (tripPoints.length === 0) {
   render(mainContainerElement, new EmptyListView().element, RenderPosition.AFTER_BEGIN);
 } else {
@@ -92,7 +146,6 @@ if (tripPoints.length === 0) {
 
   // Контент
   // Контейнер Список точек маршрута
-  const eventsListComponent = new EventsListView();
   render(tripEventsComponent.element, eventsListComponent.element, RenderPosition.BEFORE_END);
 
   // Точки маршрута

@@ -123,7 +123,7 @@ const generateTripPoint = (
   {
     dateFromString,
     dateToString
-  } ={}) => (
+  } = {}) => (
   {
     basePrice: getRandomInteger(20, 200),
     dateFrom: parseDate(dateFromString),

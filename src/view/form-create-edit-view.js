@@ -2,10 +2,25 @@
 import { createElement } from '../render.js';
 import { capitalise } from '../utils/utils.js';
 
-// ЗДЕСЬ КОД ПОВТОРЯЕТСЯ НА 90% с формой создания точки
-// Оставляю пока в качестве чернового варианта для проверки, затем оставлю только форму создания
+// Получить массив офферов с признаком активности
+const getRenderedWithCheckboxOffers = (offersToRender, offersFromPoint) => {
+  const renderedOffers = offersToRender.reduce((array, offer) => {
+    array.push({
+      ...offer,
+      isChecked: offersFromPoint.some(({ id }) => id === offer.id),
+    });
+    return array;
+  }, []);
 
-// Шаблон для выбора типа точки маршрута из кружочка
+  return renderedOffers;
+};
+
+// ПУНКТ НАЗНАЧЕНИЯ
+const createDestinationListTemplate = (destinations) => {
+  destinations.map(({ name }) => `<option value="${name}"></option>`).join('');
+};
+
+// ТИП
 // ["taxi", "bus", "train", "ship", "drive", "flight", "check-in", "sightseeing", "restaurant"]
 const createEventTypeListTemplate = () => (
   `<fieldset class="event__type-group">
@@ -58,6 +73,7 @@ const createEventTypeListTemplate = () => (
   </fieldset>`
 );
 
+// ОФФЕРЫ
 // Генерируем один оффер
 const createOfferTemplate = ({ id, title, price, isChecked = false} = {}) => (
   `<div class="event__offer-selector">
@@ -87,20 +103,31 @@ const createOffersSectionTemplate = (offers) => (
   </section>`
 );
 
-const getRenderedWithCheckboxOffers = (offersToRender, offersFromPoint) => {
-  const renderedOffers = offersToRender.reduce((array, offer) => {
-    array.push({
-      ...offer,
-      isChecked: offersFromPoint.some(({ id }) => id === offer.id),
-    });
-    return array;
-  }, []);
+// ИЗОБРАЖЕНИЯ
+// Генерируем одно изображение
+const createPhotoItemTemplate = ({ src, description } = {}) => `<img class="event__photo" src=${src} alt=${description}>`;
 
-  return renderedOffers;
+// Собираем все изображение в список. Если нет изображений - не показываем блок
+const createPhotoContainerTemplate = (pictures, isModeCreate) => {
+  if (!isModeCreate) {
+    return '';
+  }
+
+  if (pictures.length) {
+    return (
+      `<div class="event__photos-container">
+        <div class="event__photos-tape">
+          ${pictures.map(createPhotoItemTemplate).join('')}
+        </div>
+      </div>`
+    );
+  }
+
+  return '';
 };
 
 // Функция создания шаблона формы редактирования точки
-const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers) => {
+const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers, isModeCreate) => {
   const {
     type,
     dateFrom,
@@ -109,8 +136,7 @@ const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers)
     basePrice,
   } = point;
 
-  // Собираем список вариантов точке назначения для вставки в шаблон
-  const destinationListTemplate = destinations.map(({ name }) => `<option value="${name}"></option>`).join('');
+  const destinationListTemplate = createDestinationListTemplate(destinations);
   const eventTypeListTemplate = createEventTypeListTemplate();
   const offersSectionTemplate = createOffersSectionTemplate(renderedWithCheckboxOffers);
 
@@ -194,22 +220,26 @@ const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers)
         <section class="event__section  event__section--destination">
           <h3 class="event__section-title  event__section-title--destination">Destination</h3>
           <p class="event__destination-description">${destination.description}</p>
+
+          ${createPhotoContainerTemplate(destination.pictures, isModeCreate)}
         </section>
       </section>
     </form>
   </li>`;
 };
 
-export default class FormEditView {
+export default class FormCreateEditView {
   #element = null;
   #point = null;
   #destination = null;
   #allOffersMap = null;
+  isModeCreate = null;
 
-  constructor(point, destination, offers) {
+  constructor(point, destination, offers, isModeCreate) {
     this.#point = point;
     this.#destination = destination;
     this.#allOffersMap = offers;
+    this.isModeCreate = isModeCreate;
   }
 
   get element() {
@@ -224,7 +254,8 @@ export default class FormEditView {
     return createFormEditTemplate (
       this.#point,
       this.#destination,
-      getRenderedWithCheckboxOffers(this.#allOffersMap[this.#point.type] || [], this.#point.offers)
+      getRenderedWithCheckboxOffers(this.#allOffersMap[this.#point.type] || [], this.#point.offers),
+      this.isModeCreate
     );
   }
 
