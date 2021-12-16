@@ -1,3 +1,7 @@
-const makeCapLetter = (word) => `${word[0].toUpperCase()}${word.slice(1)}`;
+const ESCAPE_KEYS = ['Escape', 'Esc'];
 
-export { makeCapLetter };
+const capitalise = (word) => `${word[0].toUpperCase()}${word.slice(1)}`;
+
+const isEscapeEvent = (evt) => ESCAPE_KEYS.includes(evt.key);
+
+export { capitalise, isEscapeEvent };

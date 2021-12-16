@@ -1,10 +1,26 @@
-import { makeCapLetter } from '../utils/utils.js';
-import { parseDate } from '../utils/date.js';
+// import { allOffers } from '../mock/trip-point.js';
+import { createElement } from '../render.js';
+import { capitalise } from '../utils/utils.js';
 
-// ЗДЕСЬ КОД ПОВТОРЯЕТСЯ НА 90% с формой создания точки
-// Оставляю пока в качестве чернового варианта для проверки, затем оставлю только форму создания
+// Получить массив офферов с признаком активности
+const getRenderedWithCheckboxOffers = (offersToRender, offersFromPoint) => {
+  const renderedOffers = offersToRender.reduce((array, offer) => {
+    array.push({
+      ...offer,
+      isChecked: offersFromPoint.some(({ id }) => id === offer.id),
+    });
+    return array;
+  }, []);
 
-// Шаблон для выбора типа точки маршрута из кружочка
+  return renderedOffers;
+};
+
+// ПУНКТ НАЗНАЧЕНИЯ
+const createDestinationListTemplate = (destinations) => {
+  destinations.map(({ name }) => `<option value="${name}"></option>`).join('');
+};
+
+// ТИП
 // ["taxi", "bus", "train", "ship", "drive", "flight", "check-in", "sightseeing", "restaurant"]
 const createEventTypeListTemplate = () => (
   `<fieldset class="event__type-group">
@@ -57,6 +73,7 @@ const createEventTypeListTemplate = () => (
   </fieldset>`
 );
 
+// ОФФЕРЫ
 // Генерируем один оффер
 const createOfferTemplate = ({ id, title, price, isChecked = false} = {}) => (
   `<div class="event__offer-selector">
@@ -76,7 +93,7 @@ const createOfferTemplate = ({ id, title, price, isChecked = false} = {}) => (
 );
 
 // Собираем все сгенерированные офферы
-const createOffersSectionTemlate = (offers) => (
+const createOffersSectionTemplate = (offers) => (
   `<section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
@@ -86,38 +103,42 @@ const createOffersSectionTemlate = (offers) => (
   </section>`
 );
 
+// ИЗОБРАЖЕНИЯ
+// Генерируем одно изображение
+const createPhotoItemTemplate = ({ src, description } = {}) => `<img class="event__photo" src=${src} alt=${description}>`;
+
+// Собираем все изображение в список. Если нет изображений - не показываем блок
+const createPhotoContainerTemplate = (pictures, isModeCreate) => {
+  if (!isModeCreate) {
+    return '';
+  }
+
+  if (pictures.length) {
+    return (
+      `<div class="event__photos-container">
+        <div class="event__photos-tape">
+          ${pictures.map(createPhotoItemTemplate).join('')}
+        </div>
+      </div>`
+    );
+  }
+
+  return '';
+};
+
 // Функция создания шаблона формы редактирования точки
-export const createFormEditTemplate = (point, destinations, allOffers) => {
+const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers, isModeCreate) => {
   const {
     type,
-    dateFrom: dateFromObject,
-    dateTo: dateToObject,
+    dateFrom,
+    dateTo,
     destination,
     basePrice,
-    offers: tripOffers,
   } = point;
 
-  const renderedOffers = [];
-
-  // Сравниваем общий список офферов с офферами, указанными для точки
-  // в пустой массив renderedOffers пушим объект - оффер и признак isChecked
-  allOffers.forEach((offer) => {
-    const isChecked = tripOffers.some(({ id }) => id === offer.id);
-
-    renderedOffers.push({
-      ...offer,
-      isChecked,
-    });
-  });
-
-  // Собираем список вариантов точке назначения для вставки в шаблон
-  const destinationList = destinations.map(({ name }) => `<option value="${name}"></option>`).join('');
-
-  const dateFrom = parseDate(dateFromObject);
-  const dateTo = parseDate(dateToObject);
-
+  const destinationListTemplate = createDestinationListTemplate(destinations);
   const eventTypeListTemplate = createEventTypeListTemplate();
-  const offersSectionTemlate = createOffersSectionTemlate(renderedOffers);
+  const offersSectionTemplate = createOffersSectionTemplate(renderedWithCheckboxOffers);
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -141,7 +162,7 @@ export const createFormEditTemplate = (point, destinations, allOffers) => {
 
         <div class="event__field-group  event__field-group--destination">
           <label class="event__label  event__type-output" for="event-destination-1">
-            ${makeCapLetter(type)}
+            ${capitalise(type)}
           </label>
           <input
             class="event__input  event__input--destination"
@@ -151,7 +172,7 @@ export const createFormEditTemplate = (point, destinations, allOffers) => {
             value="${destination.name}"
             list="destination-list-1">
           <datalist id="destination-list-1">
-            ${destinationList}
+            ${destinationListTemplate}
           </datalist>
         </div>
 
@@ -194,13 +215,51 @@ export const createFormEditTemplate = (point, destinations, allOffers) => {
       </header>
       <section class="event__details">
 
-        ${offersSectionTemlate}
+        ${offersSectionTemplate}
 
         <section class="event__section  event__section--destination">
           <h3 class="event__section-title  event__section-title--destination">Destination</h3>
           <p class="event__destination-description">${destination.description}</p>
+
+          ${createPhotoContainerTemplate(destination.pictures, isModeCreate)}
         </section>
       </section>
     </form>
   </li>`;
 };
+
+export default class FormCreateEditView {
+  #element = null;
+  #point = null;
+  #destination = null;
+  #allOffersMap = null;
+  isModeCreate = null;
+
+  constructor(point, destination, offers, isModeCreate) {
+    this.#point = point;
+    this.#destination = destination;
+    this.#allOffersMap = offers;
+    this.isModeCreate = isModeCreate;
+  }
+
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
+    }
+
+    return this.#element;
+  }
+
+  get template() {
+    return createFormEditTemplate (
+      this.#point,
+      this.#destination,
+      getRenderedWithCheckboxOffers(this.#allOffersMap[this.#point.type] || [], this.#point.offers),
+      this.isModeCreate
+    );
+  }
+
+  removeElement() {
+    this.#element = null;
+  }
+}

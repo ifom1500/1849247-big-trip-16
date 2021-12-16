@@ -1,6 +1,6 @@
-import { makeCapLetter } from '../utils/utils.js';
+import { createElement } from '../render.js';
+import { capitalise } from '../utils/utils.js';
 import { formatPointDuration } from '../utils/date.js';
-
 
 // Генерируем один оффер
 const createOfferTemplate = ({ title, price } = {}) => (
@@ -18,7 +18,8 @@ const createEventOffersListTemplate = (offers) => (
   </ul>`
 );
 
-export const createPointTemplate = (point) => {
+// Создать шаблон разметки точки
+const createPointTemplate = (point) => {
   const {
     type,
     dateFrom,
@@ -48,7 +49,7 @@ export const createPointTemplate = (point) => {
           src="img/icons/${type}.png"
           alt="Event type icon">
       </div>
-      <h3 class="event__title">${makeCapLetter(type)} ${destination.name}</h3>
+      <h3 class="event__title">${capitalise(type)} ${destination.name}</h3>
       <div class="event__schedule">
         <p class="event__time">
           <time
@@ -86,3 +87,28 @@ export const createPointTemplate = (point) => {
     </div>
   </li>`;
 };
+
+export default class TripPointView {
+  #element = null;
+  #point = null;
+
+  constructor(point) {
+    this.#point = point;
+  }
+
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
+    }
+
+    return this.#element;
+  }
+
+  get template() {
+    return createPointTemplate(this.#point);
+  }
+
+  removeElement() {
+    this.#element = null;
+  }
+}
