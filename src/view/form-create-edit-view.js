@@ -1,6 +1,6 @@
 // import { allOffers } from '../mock/trip-point.js';
 import AbstractView from './abstract-view.js';
-import { capitalise } from '../utils/utils.js';
+import { capitalise } from '../utils/common.js';
 
 // Получить массив офферов с признаком активности
 const getRenderedWithCheckboxOffers = (offersToRender, offersFromPoint) => {

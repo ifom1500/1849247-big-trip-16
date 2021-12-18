@@ -1,4 +1,4 @@
-import { RenderPosition, render } from './render.js';
+import { RenderPosition, render } from './utils/render.js';
 
 import MenuView from './view/menu-view.js';
 import NewEventButtonView from './view/new-event-button-view.js';
@@ -11,7 +11,7 @@ import EventsListView from './view/events-list-view.js';
 import TripEventsView from './view/trip-events-view.js';
 import EmptyListView from './view/empty-list-view.js';
 
-import { isEscapeEvent } from './utils/utils.js';
+import { isEscapeEvent } from './utils/common.js';
 import { parseDate } from './utils/date.js';
 import { destinations, tripPoints, AllOffersMap } from './mock/trip-point.js';
 

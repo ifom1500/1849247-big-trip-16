@@ -1,5 +1,5 @@
 import AbstractView from './abstract-view.js';
-import { capitalise } from '../utils/utils.js';
+import { capitalise } from '../utils/common.js';
 import { formatPointDuration } from '../utils/date.js';
 
 // Генерируем один оффер
