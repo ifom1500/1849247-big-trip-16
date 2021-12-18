@@ -1,4 +1,4 @@
-import { createElement } from '../render.js';
+import AbstractView from './abstract-view.js';
 import { capitalise } from '../utils/utils.js';
 import { formatPointDuration } from '../utils/date.js';
 
@@ -88,27 +88,25 @@ const createPointTemplate = (point) => {
   </li>`;
 };
 
-export default class TripPointView {
-  #element = null;
+export default class TripPointView extends AbstractView{
   #point = null;
 
   constructor(point) {
+    super();
+
     this.#point = point;
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
   }
 
   get template() {
     return createPointTemplate(this.#point);
   }
 
-  removeElement() {
-    this.#element = null;
+  setClickHandler = (callback) => {
+    this._callback.editClick = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
+  }
+
+  #editClickHandler = () => {
+    this._callback.editClick();
   }
 }

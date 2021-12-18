@@ -1,5 +1,5 @@
 // import { allOffers } from '../mock/trip-point.js';
-import { createElement } from '../render.js';
+import AbstractView from './abstract-view.js';
 import { capitalise } from '../utils/utils.js';
 
 // Получить массив офферов с признаком активности
@@ -228,26 +228,19 @@ const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers,
   </li>`;
 };
 
-export default class FormCreateEditView {
-  #element = null;
+export default class FormCreateEditView extends AbstractView {
   #point = null;
   #destination = null;
   #allOffersMap = null;
   isModeCreate = null;
 
   constructor(point, destination, offers, isModeCreate) {
+    super();
+
     this.#point = point;
     this.#destination = destination;
     this.#allOffersMap = offers;
     this.isModeCreate = isModeCreate;
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
   }
 
   get template() {
@@ -259,7 +252,22 @@ export default class FormCreateEditView {
     );
   }
 
-  removeElement() {
-    this.#element = null;
+  setEditClickHandler = (callback) => {
+    this._callback.click = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#clickHandler);
+  }
+
+  #clickHandler = () => {
+    this._callback.click();
+  }
+
+  setFormSubmitHandler = (callback) => {
+    this._callback.formSubmit = callback;
+    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
+  }
+
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.formSubmit();
   }
 }
