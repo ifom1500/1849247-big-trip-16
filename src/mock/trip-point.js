@@ -1,5 +1,42 @@
 import { parseDate } from '../utils/date.js';
 
+// Черновой вариант объекта с данными, которые будут подставляться по умолчанию
+export const DEFAULT_POINT_DRAFT_DATA = {
+  basePrice: 10,
+  dateFrom: parseDate('2019-07-10T22:55:56.845Z'),
+  dateTo: parseDate('2019-07-10T22:55:56.845Z'),
+  destination: {
+    description: 'Your description',
+    name: 'Your destination',
+    pictures: [
+      {
+        description: 'picture Racсoon 1',
+        src: 'http://picsum.photos/248/152?r=1',
+      },
+      {
+        description: 'picture Racсoon 2',
+        src: 'http://picsum.photos/248/152?r=2',
+      },
+      {
+        description: 'picture Racсoon 3',
+        src: 'http://picsum.photos/248/152?r=3',
+      },
+      {
+        description: 'picture Racсoon 4',
+        src: 'http://picsum.photos/248/152?r=4',
+      }
+    ],
+  },
+  id: '0',
+  isFavorite: false,
+  type: 'bus',
+  offers: [
+    {type: 'bus', offers: [{ id: 1, title: 'Video guide', price: 100 }]}
+  ],
+};
+
+export const POINT_COUNT = 3;
+
 const OFFER_TITLES = [
   // taxi
   'Upgrade to a business class',
@@ -113,7 +150,7 @@ const allOffers = (
 );
 
 // Функция адаптер: объект-словарь
-export const AllOffersMap = allOffers.reduce((map, item) => {
+export const allOffersMap = allOffers.reduce((map, item) => {
   map[item.type] = item.offers;
   return map;
 }, {});

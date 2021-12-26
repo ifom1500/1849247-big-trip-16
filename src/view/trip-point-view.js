@@ -1,5 +1,5 @@
-import { createElement } from '../render.js';
-import { capitalise } from '../utils/utils.js';
+import AbstractView from './abstract-view.js';
+import { capitalise } from '../utils/common.js';
 import { formatPointDuration } from '../utils/date.js';
 
 // Генерируем один оффер
@@ -88,27 +88,25 @@ const createPointTemplate = (point) => {
   </li>`;
 };
 
-export default class TripPointView {
-  #element = null;
+export default class TripPointView extends AbstractView{
   #point = null;
 
   constructor(point) {
+    super();
+
     this.#point = point;
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
   }
 
   get template() {
     return createPointTemplate(this.#point);
   }
 
-  removeElement() {
-    this.#element = null;
+  setRollupButtonClickHandler = (callback) => {
+    this._callback.rollupButtonClick = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupButtonClickHandler);
+  }
+
+  #rollupButtonClickHandler = () => {
+    this._callback.rollupButtonClick();
   }
 }

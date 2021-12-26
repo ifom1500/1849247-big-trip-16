@@ -1,13 +1,12 @@
-// import { allOffers } from '../mock/trip-point.js';
-import { createElement } from '../render.js';
-import { capitalise } from '../utils/utils.js';
+import AbstractView from './abstract-view.js';
+import { capitalise } from '../utils/common.js';
 
 // Получить массив офферов с признаком активности
-const getRenderedWithCheckboxOffers = (offersToRender, offersFromPoint) => {
-  const renderedOffers = offersToRender.reduce((array, offer) => {
+const getRenderedWithCheckboxOffers = (allOffers, pointOffers) => {
+  const renderedOffers = allOffers.reduce((array, offer) => {
     array.push({
       ...offer,
-      isChecked: offersFromPoint.some(({ id }) => id === offer.id),
+      isChecked: pointOffers.some(({ id }) => id === offer.id),
     });
     return array;
   }, []);
@@ -16,9 +15,8 @@ const getRenderedWithCheckboxOffers = (offersToRender, offersFromPoint) => {
 };
 
 // ПУНКТ НАЗНАЧЕНИЯ
-const createDestinationListTemplate = (destinations) => {
+const createDestinationListTemplate = (destinations) =>
   destinations.map(({ name }) => `<option value="${name}"></option>`).join('');
-};
 
 // ТИП
 // ["taxi", "bus", "train", "ship", "drive", "flight", "check-in", "sightseeing", "restaurant"]
@@ -105,7 +103,8 @@ const createOffersSectionTemplate = (offers) => (
 
 // ИЗОБРАЖЕНИЯ
 // Генерируем одно изображение
-const createPhotoItemTemplate = ({ src, description } = {}) => `<img class="event__photo" src=${src} alt=${description}>`;
+const createPhotoItemTemplate = ({ src, description }) =>
+  `<img class="event__photo" src=${src} alt=${description}>`;
 
 // Собираем все изображение в список. Если нет изображений - не показываем блок
 const createPhotoContainerTemplate = (pictures, isModeCreate) => {
@@ -156,7 +155,7 @@ const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers,
           <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
           <div class="event__type-list">
-            ${eventTypeListTemplate};
+            ${eventTypeListTemplate}
           </div>
         </div>
 
@@ -228,26 +227,19 @@ const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers,
   </li>`;
 };
 
-export default class FormCreateEditView {
-  #element = null;
+export default class FormCreateEditView extends AbstractView {
   #point = null;
   #destination = null;
   #allOffersMap = null;
-  isModeCreate = null;
+  #isModeCreate = false;
 
   constructor(point, destination, offers, isModeCreate) {
+    super();
+
     this.#point = point;
     this.#destination = destination;
     this.#allOffersMap = offers;
-    this.isModeCreate = isModeCreate;
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
+    this.#isModeCreate = isModeCreate;
   }
 
   get template() {
@@ -255,11 +247,35 @@ export default class FormCreateEditView {
       this.#point,
       this.#destination,
       getRenderedWithCheckboxOffers(this.#allOffersMap[this.#point.type] || [], this.#point.offers),
-      this.isModeCreate
+      this.#isModeCreate
     );
   }
 
-  removeElement() {
-    this.#element = null;
+  setRollupButtonClickHandler = (callback) => {
+    this._callback.rollupButtonClick = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupButtonClickHandler);
+  }
+
+  setFormSubmitHandler = (callback) => {
+    this._callback.formSubmit = callback;
+    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
+  }
+
+  setResetButtonClickHandler = (callback) => {
+    this._callback.resetButtonClick = callback;
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#resetButtonClickHandler);
+  }
+
+  #rollupButtonClickHandler = () => {
+    this._callback.rollupButtonClick();
+  }
+
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.formSubmit();
+  }
+
+  #resetButtonClickHandler = () => {
+    this._callback.resetButtonClick();
   }
 }
