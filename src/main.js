@@ -12,8 +12,8 @@ import TripEventsView from './view/trip-events-view.js';
 import EmptyListView from './view/empty-list-view.js';
 
 import { isEscapeEvent } from './utils/common.js';
-import { DEFAULT_POINT, Mode, POINT_COUNT } from './utils/constants.js';
-import { destinations, tripPoints, AllOffersMap } from './mock/trip-point.js';
+import { FormMode } from './utils/constants.js';
+import { destinations, tripPoints, allOffersMap, POINT_COUNT, DEFAULT_POINT_DRAFT_DATA } from './mock/trip-point.js';
 
 const headerElement = document.querySelector('.page-header');
 const tripMainElement = headerElement.querySelector('.trip-main');
@@ -27,10 +27,10 @@ const renderPoint = (
   eventsListElement,
   point,
   renderPosition = RenderPosition.BEFORE_END,
-  mode = Mode.EDIT_MODE) => {
+  mode = FormMode.EDIT) => {
 
   const pointComponent = new TripPointView(point);
-  const pointEditComponent = new FormCreateEditView(point, destinations, AllOffersMap, mode);
+  const pointEditComponent = new FormCreateEditView(point, destinations, allOffersMap, mode);
 
   const replacePointToForm = () => {
     replace(pointEditComponent, pointComponent);
@@ -40,38 +40,32 @@ const renderPoint = (
     replace(pointComponent, pointEditComponent);
   };
 
-  const onEscKeyDown = (evt) => {
+  const escKeyDownHandler = (evt) => {
     if (isEscapeEvent(evt)) {
       evt.preventDefault();
       replaceFormToPoint();
-      document.removeEventListener('keydown', onEscKeyDown);
+      document.removeEventListener('keydown', escKeyDownHandler);
     }
   };
 
-  pointComponent.setClickHandler(() => {
+  pointComponent.setRollupButtonClickHandler(() => {
     replacePointToForm();
-    document.addEventListener('keydown', onEscKeyDown);
+    document.addEventListener('keydown', escKeyDownHandler);
   });
 
-  pointEditComponent.setEditClickHandler(() => {
+  pointEditComponent.setRollupButtonClickHandler(() => {
     replaceFormToPoint();
-    document.removeEventListener('keydown', onEscKeyDown);
+    document.removeEventListener('keydown', escKeyDownHandler);
   });
 
   pointEditComponent.setFormSubmitHandler(() => {
     replaceFormToPoint();
-    document.removeEventListener('keydown', onEscKeyDown);
+    document.removeEventListener('keydown', escKeyDownHandler);
   });
 
-  pointEditComponent.setChangeTypeHandler((evt) => {
-    const typeButton = mainContainerElement.querySelector('.event__type-btn');
-    const typeButtonIcon = typeButton.querySelector('.event__type-icon');
-
-    typeButtonIcon.src = `img/icons/${evt.target.value}.png`;
-  });
-
-  pointEditComponent.setDeleteHandler(() => {
+  pointEditComponent.setResetButtonClickHandler(() => {
     remove(pointEditComponent);
+    document.removeEventListener('keydown', escKeyDownHandler);
   });
 
   if (mode) {
@@ -86,7 +80,7 @@ const renderButton = (eventsListElement) => {
   render(tripMainElement, newEventButton, RenderPosition.BEFORE_END);
 
   newEventButton.setButtonClickHandler(() => {
-    renderPoint(eventsListElement.element, DEFAULT_POINT, RenderPosition.AFTER_BEGIN, Mode.CREATE_MODE);
+    renderPoint(eventsListElement.element, DEFAULT_POINT_DRAFT_DATA, RenderPosition.AFTER_BEGIN, FormMode.CREATE);
   });
 };
 

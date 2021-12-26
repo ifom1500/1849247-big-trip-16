@@ -11,7 +11,7 @@ export default class AbstractView {
   }
 
   get element() {
-    if (!this.#element) {
+    if (this.#element === null) {
       this.#element = createElement(this.template);
     }
 

@@ -1,13 +1,12 @@
-// import { allOffers } from '../mock/trip-point.js';
 import AbstractView from './abstract-view.js';
 import { capitalise } from '../utils/common.js';
 
 // Получить массив офферов с признаком активности
-const getRenderedWithCheckboxOffers = (offersToRender, offersFromPoint) => {
-  const renderedOffers = offersToRender.reduce((array, offer) => {
+const getRenderedWithCheckboxOffers = (allOffers, pointOffers) => {
+  const renderedOffers = allOffers.reduce((array, offer) => {
     array.push({
       ...offer,
-      isChecked: offersFromPoint.some(({ id }) => id === offer.id),
+      isChecked: pointOffers.some(({ id }) => id === offer.id),
     });
     return array;
   }, []);
@@ -16,9 +15,8 @@ const getRenderedWithCheckboxOffers = (offersToRender, offersFromPoint) => {
 };
 
 // ПУНКТ НАЗНАЧЕНИЯ
-const createDestinationListTemplate = (destinations) => {
+const createDestinationListTemplate = (destinations) =>
   destinations.map(({ name }) => `<option value="${name}"></option>`).join('');
-};
 
 // ТИП
 // ["taxi", "bus", "train", "ship", "drive", "flight", "check-in", "sightseeing", "restaurant"]
@@ -105,7 +103,8 @@ const createOffersSectionTemplate = (offers) => (
 
 // ИЗОБРАЖЕНИЯ
 // Генерируем одно изображение
-const createPhotoItemTemplate = ({ src, description } = {}) => `<img class="event__photo" src=${src} alt=${description}>`;
+const createPhotoItemTemplate = ({ src, description }) =>
+  `<img class="event__photo" src=${src} alt=${description}>`;
 
 // Собираем все изображение в список. Если нет изображений - не показываем блок
 const createPhotoContainerTemplate = (pictures, isModeCreate) => {
@@ -156,7 +155,7 @@ const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers,
           <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
           <div class="event__type-list">
-            ${eventTypeListTemplate};
+            ${eventTypeListTemplate}
           </div>
         </div>
 
@@ -232,7 +231,7 @@ export default class FormCreateEditView extends AbstractView {
   #point = null;
   #destination = null;
   #allOffersMap = null;
-  isModeCreate = null;
+  #isModeCreate = false;
 
   constructor(point, destination, offers, isModeCreate) {
     super();
@@ -240,7 +239,7 @@ export default class FormCreateEditView extends AbstractView {
     this.#point = point;
     this.#destination = destination;
     this.#allOffersMap = offers;
-    this.isModeCreate = isModeCreate;
+    this.#isModeCreate = isModeCreate;
   }
 
   get template() {
@@ -248,17 +247,13 @@ export default class FormCreateEditView extends AbstractView {
       this.#point,
       this.#destination,
       getRenderedWithCheckboxOffers(this.#allOffersMap[this.#point.type] || [], this.#point.offers),
-      this.isModeCreate
+      this.#isModeCreate
     );
   }
 
-  setEditClickHandler = (callback) => {
-    this._callback.click = callback;
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#clickHandler);
-  }
-
-  #clickHandler = () => {
-    this._callback.click();
+  setRollupButtonClickHandler = (callback) => {
+    this._callback.rollupButtonClick = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupButtonClickHandler);
   }
 
   setFormSubmitHandler = (callback) => {
@@ -266,26 +261,21 @@ export default class FormCreateEditView extends AbstractView {
     this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
   }
 
+  setResetButtonClickHandler = (callback) => {
+    this._callback.resetButtonClick = callback;
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#resetButtonClickHandler);
+  }
+
+  #rollupButtonClickHandler = () => {
+    this._callback.rollupButtonClick();
+  }
+
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
     this._callback.formSubmit();
   }
 
-  setDeleteHandler = (callback) => {
-    this._callback.delete = callback;
-    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteHandler);
-  }
-
-  #deleteHandler = () => {
-    this._callback.delete();
-  }
-
-  setChangeTypeHandler = (callback) => {
-    this._callback.changeType = callback;
-    this.element.querySelector('.event__type-group').addEventListener('change', this.#changeTypeHandler);
-  }
-
-  #changeTypeHandler = (evt) => {
-    this._callback.changeType(evt);
+  #resetButtonClickHandler = () => {
+    this._callback.resetButtonClick();
   }
 }
