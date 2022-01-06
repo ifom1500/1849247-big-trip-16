@@ -1,4 +1,4 @@
-import GeneralPresenter from './presenter/trip-presenter.js';
+import GeneralPresenter from './presenter/general-presenter.js';
 import { destinations, tripPoints, POINT_COUNT } from './mock/trip-point.js';
 
 const headerElement = document.querySelector('.page-header'); // ok

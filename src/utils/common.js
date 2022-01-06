@@ -18,4 +18,10 @@ const updateItem = (items, update) => {
   ];
 };
 
-export { capitalise, isEscapeEvent, updateItem };
+const SortType = {
+  DAY: 'day',
+  TIME: 'time',
+  PRICE: 'price',
+};
+
+export { capitalise, isEscapeEvent, updateItem, SortType };

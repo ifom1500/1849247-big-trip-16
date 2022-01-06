@@ -38,7 +38,7 @@ export default class PointPresenter {
 
     // создаем экземпляры вьюшек
     this.#pointComponent = new TripPointView(this.#point);
-    this.#pointEditComponent = new FormCreateEditView(this.#point, this.#destinations, allOffersMap);
+    this.#pointEditComponent = new FormCreateEditView(this.#point, this.#destinations, allOffersMap, this.#mode);
 
     // вешаем обработчики
     this.#pointComponent.setRollupButtonClickHandler(this.#handleEditClick);
@@ -66,6 +66,7 @@ export default class PointPresenter {
   }
 
   destroy = () => {
+    console.log('destroy');
     remove(this.#pointComponent);
     remove(this.#pointEditComponent);
   }

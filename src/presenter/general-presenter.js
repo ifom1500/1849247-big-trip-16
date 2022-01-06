@@ -11,7 +11,7 @@ import PointPresenter from '../presenter/point-presenter.js';
 
 import { RenderPosition, render } from '../utils/render.js';
 import { DEFAULT_POINT_DRAFT_DATA } from '../mock/trip-point.js';
-import { updateItem } from '../utils/common.js';
+import { updateItem, SortType } from '../utils/common.js';
 
 
 export default class GeneralPresenter {
@@ -37,10 +37,13 @@ export default class GeneralPresenter {
   #emptyListComponent = new EmptyListView();
 
   #pointPresenter = new Map();
+  #currentSortType = null;
 
   constructor(headerContainer, mainContainer) {
     this.#headerElement = headerContainer;
     this.#mainElement = mainContainer;
+
+    this.#currentSortType = SortType.DAY;
   }
 
 
@@ -104,6 +107,8 @@ export default class GeneralPresenter {
 
   #renderSorting = () => {
     render(this.#tripEventsComponent, this.#sortingComponent, RenderPosition.AFTER_BEGIN);
+
+    this.#sortingComponent.setSortTypeChangeHandler(this.#handleSortTypeChange);
   }
 
   #renderEventsList = () => {
@@ -119,16 +124,22 @@ export default class GeneralPresenter {
   #renderPoint = (point) => {
     const pointPresenter = new PointPresenter(this.#eventsListComponent);
     pointPresenter.init(point, this.#destinations);
-    this.#pointPresenter.set(point.id, pointPresenter);
   }
 
-  #clearPointList = () => {
+  #handleSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      console.log('currentSortType === sortType');
+      return;
+    }
+
+    // this.#sortPoints(sortType); TODO:
+    this.#clearPointsList();
+    this.#renderPoints();
+  }
+
+  #clearPointsList = () => {
+    console.log(this.#pointPresenter);
     this.#pointPresenter.forEach((presenter) => presenter.destroy());
     this.#pointPresenter.clear();
-  }
-
-  #handlePointChange = (updatedPoint) => {
-    this.#tripPoints = updateItem(this.#tripPoints, updatedPoint);
-    this.#pointPresenter.get(updatedPoint.id).init(updatedPoint);
   }
 }
