@@ -1,7 +1,7 @@
 import TripPointView from '../view/trip-point-view.js';
 import FormCreateEditView from '../view/form-create-edit-view.js';
 
-import { render, replace, remove } from '../utils/render.js';
+import { RenderPosition, render, replace, remove } from '../utils/render.js';
 import { isEscapeEvent } from '../utils/common.js';
 import { allOffersMap } from '../mock/trip-point.js';
 
@@ -17,20 +17,19 @@ export default class PointPresenter {
   #pointEditComponent = null;
 
   #point = null;
-  #renderPosition = null;
-  #mode = null;
   #destinations = [];
+
+  #mode = null;
 
 
   constructor(eventsListElement) {
     this.#eventsListElement = eventsListElement;
+    this.#mode = Mode.DEFAULT;
   }
 
-  init = (point, renderPosition, mode, destinations) => {
+  init = (point, destinations) => {
     // записываем параметры в свойства презентера
     this.#point = point;
-    this.#renderPosition = renderPosition;
-    this.#mode = mode;
     this.#destinations = [...destinations];
 
     // записываем исходное состояние копмонентов
@@ -39,7 +38,7 @@ export default class PointPresenter {
 
     // создаем экземпляры вьюшек
     this.#pointComponent = new TripPointView(this.#point);
-    this.#pointEditComponent = new FormCreateEditView(this.#point, this.#destinations, allOffersMap, this.#mode);
+    this.#pointEditComponent = new FormCreateEditView(this.#point, this.#destinations, allOffersMap);
 
     // вешаем обработчики
     this.#pointComponent.setRollupButtonClickHandler(this.#handleEditClick);
@@ -49,11 +48,7 @@ export default class PointPresenter {
 
     // отрисовка с нуля
     if (prevPointComponent === null || prevPointEditComponent === null) {
-      if (this.#mode) {
-        render(this.#eventsListElement, this.#pointEditComponent, this.#renderPosition);
-      } else {
-        render(this.#eventsListElement, this.#pointComponent, this.#renderPosition);
-      }
+      render(this.#eventsListElement, this.#pointComponent, RenderPosition.BEFORE_END);
       return;
     }
 
@@ -75,12 +70,23 @@ export default class PointPresenter {
     remove(this.#pointEditComponent);
   }
 
+  // resetView() {
+  //   if (this.#mode !== Mode.DEFAULT) {
+  //     this.#replaceFormToPoint();
+  //   }
+  // }
+
   #replacePointToForm = () => {
     replace(this.#pointEditComponent, this.#pointComponent);
+    // this.#changeMode();
+    this.#mode = Mode.EDITING;
+    console.log('mode', this.#mode);
   }
 
   #replaceFormToPoint = () => {
     replace(this.#pointComponent, this.#pointEditComponent);
+    this.#mode = Mode.DEFAULT;
+    console.log('mode', this.#mode);
   }
 
   #escKeyDownHandler = (evt) => {

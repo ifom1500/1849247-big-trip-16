@@ -1,9 +1,9 @@
-import TripPresenter from './presenter/trip-presenter.js';
+import GeneralPresenter from './presenter/trip-presenter.js';
 import { destinations, tripPoints, POINT_COUNT } from './mock/trip-point.js';
 
 const headerElement = document.querySelector('.page-header'); // ok
 const mainElement = document.querySelector('.page-main'); // ok
 
-const tripPresenter = new TripPresenter(headerElement, mainElement);
+const generalPresenter = new GeneralPresenter(headerElement, mainElement);
 
-tripPresenter.init(tripPoints, destinations, POINT_COUNT);
+generalPresenter.init(tripPoints, destinations, POINT_COUNT);

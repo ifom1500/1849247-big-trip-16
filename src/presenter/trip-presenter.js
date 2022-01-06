@@ -10,12 +10,11 @@ import EmptyListView from '../view/empty-list-view.js';
 import PointPresenter from '../presenter/point-presenter.js';
 
 import { RenderPosition, render } from '../utils/render.js';
-import { FormMode } from '../utils/constants.js';
 import { DEFAULT_POINT_DRAFT_DATA } from '../mock/trip-point.js';
 import { updateItem } from '../utils/common.js';
 
 
-export default class TripPresenter {
+export default class GeneralPresenter {
   #headerElement = null;
   #mainElement = null;
   #tripMainElement = null;
@@ -83,7 +82,7 @@ export default class TripPresenter {
     render(this.#tripMainElement, this.#newEventButtonComponent, RenderPosition.BEFORE_END);
 
     this.#newEventButtonComponent.setButtonClickHandler(() => {
-      this.#renderPoint(this.#eventsListComponent.element, DEFAULT_POINT_DRAFT_DATA, RenderPosition.AFTER_BEGIN, FormMode.CREATE);
+      this.#renderPoint(DEFAULT_POINT_DRAFT_DATA);
     });
   }
 
@@ -113,18 +112,13 @@ export default class TripPresenter {
 
   #renderPoints = () => {
     for (let i = 0; i < this.#pointCount; i++) {
-      this.#renderPoint(this.#eventsListComponent, this.#tripPoints[i]);
+      this.#renderPoint(this.#tripPoints[i]);
     }
   }
 
-  #renderPoint = (
-    eventsListElement,
-    point,
-    renderPosition = RenderPosition.BEFORE_END,
-    mode = FormMode.EDIT
-  ) => {
-    const pointPresenter = new PointPresenter(eventsListElement);
-    pointPresenter.init(point, renderPosition, mode, this.#destinations);
+  #renderPoint = (point) => {
+    const pointPresenter = new PointPresenter(this.#eventsListComponent);
+    pointPresenter.init(point, this.#destinations);
     this.#pointPresenter.set(point.id, pointPresenter);
   }
 
