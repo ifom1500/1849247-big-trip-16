@@ -44,6 +44,7 @@ export default class TripPresenter {
     this.#mainElement = mainContainer;
   }
 
+
   init(tripPoints, destinations, POINT_COUNT) {
     this.#tripMainElement = this.#headerElement.querySelector('.trip-main');
     this.#tripControlsElement = this.#headerElement.querySelector('.trip-controls');
@@ -54,13 +55,9 @@ export default class TripPresenter {
     this.#destinations = [...destinations];
     this.#pointCount = POINT_COUNT;
 
-    this.#renderSite(this.#tripPoints);
+    this.#renderSite();
   }
 
-  #handlePointChange = (updatedPoint) => {
-    this.#tripPoints = updateItem(this.#tripPoints, updatedPoint);
-    this.#pointPresenter.get(updatedPoint.id).init(updatedPoint);
-  }
 
   #renderSite = () => {
     this.#renderMenu();
@@ -69,18 +66,11 @@ export default class TripPresenter {
     this.#renderFilters();
 
     if (this.#tripPoints.length === 0) {
-      // Заглушка
       this.#renderEmptyList();
     } else {
-      // <section> - сортировка + список точек
       this.#renderTripEvents();
-
-      // Cортировка
       this.#renderSorting();
-      // Cписок точек
       this.#renderEventsList();
-
-      // Точка маршрута
       this.#renderPoints(this.#tripPoints);
     }
   }
@@ -113,12 +103,18 @@ export default class TripPresenter {
     render(this.#mainContainerElement, this.#tripEventsComponent, RenderPosition.AFTER_BEGIN);
   }
 
+  #renderSorting = () => {
+    render(this.#tripEventsComponent, this.#sortingComponent, RenderPosition.AFTER_BEGIN);
+  }
+
   #renderEventsList = () => {
     render(this.#tripEventsComponent, this.#eventsListComponent, RenderPosition.BEFORE_END);
   }
 
-  #renderSorting = () => {
-    render(this.#tripEventsComponent, this.#sortingComponent, RenderPosition.AFTER_BEGIN);
+  #renderPoints = () => {
+    for (let i = 0; i < this.#pointCount; i++) {
+      this.#renderPoint(this.#eventsListComponent, this.#tripPoints[i]);
+    }
   }
 
   #renderPoint = (
@@ -137,9 +133,8 @@ export default class TripPresenter {
     this.#pointPresenter.clear();
   }
 
-  #renderPoints = () => {
-    for (let i = 0; i < this.#pointCount; i++) {
-      this.#renderPoint(this.#eventsListComponent, this.#tripPoints[i]);
-    }
+  #handlePointChange = (updatedPoint) => {
+    this.#tripPoints = updateItem(this.#tripPoints, updatedPoint);
+    this.#pointPresenter.get(updatedPoint.id).init(updatedPoint);
   }
 }
