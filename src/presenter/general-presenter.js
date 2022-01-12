@@ -11,7 +11,8 @@ import PointPresenter from '../presenter/point-presenter.js';
 
 import { RenderPosition, render } from '../utils/render.js';
 import { DEFAULT_POINT_DRAFT_DATA } from '../mock/trip-point.js';
-import { updateItem, SortType } from '../utils/common.js';
+import { SortType } from '../utils/common.js';
+import { comparePointByStart, comparePointByDuration, comparePointByPrice } from '../utils/date.js';
 
 
 export default class GeneralPresenter {
@@ -24,7 +25,6 @@ export default class GeneralPresenter {
 
   #tripPoints = [];
   #destinations = [];
-  #pointCount = null;
 
   #menuComponent = new MenuView();
   #newEventButtonComponent = new NewEventButtonView();
@@ -46,8 +46,7 @@ export default class GeneralPresenter {
     this.#currentSortType = SortType.DAY;
   }
 
-
-  init(tripPoints, destinations, POINT_COUNT) {
+  init(tripPoints, destinations) {
     this.#tripMainElement = this.#headerElement.querySelector('.trip-main');
     this.#tripControlsElement = this.#headerElement.querySelector('.trip-controls');
     this.#navigationElement = this.#headerElement.querySelector('.trip-controls__navigation');
@@ -55,11 +54,9 @@ export default class GeneralPresenter {
 
     this.#tripPoints = [...tripPoints];
     this.#destinations = [...destinations];
-    this.#pointCount = POINT_COUNT;
 
     this.#renderSite();
   }
-
 
   #renderSite = () => {
     this.#renderMenu();
@@ -116,29 +113,54 @@ export default class GeneralPresenter {
   }
 
   #renderPoints = () => {
-    for (let i = 0; i < this.#pointCount; i++) {
-      this.#renderPoint(this.#tripPoints[i]);
-    }
+    this.#tripPoints.forEach((point) => this.#renderPoint(point));
   }
 
+
+  // ОТРИСОВКА ОДНОЙ ТОЧКИ
+
   #renderPoint = (point) => {
-    const pointPresenter = new PointPresenter(this.#eventsListComponent);
+    const pointPresenter = new PointPresenter(this.#eventsListComponent, this.#handleModeChange);
     pointPresenter.init(point, this.#destinations);
+
+    this.#pointPresenter.set(point.id, pointPresenter);
+  }
+
+  #handleModeChange = () => {
+    this.#pointPresenter.forEach((presenter) => presenter.resetView());
+  }
+
+
+  // СОРТИРОВКА
+
+  #sortPoints = (sortType) => {
+    switch (sortType) {
+      case SortType.DAY:
+        this.#tripPoints.sort(comparePointByStart);
+        break;
+      case SortType.TIME:
+        this.#tripPoints.sort(comparePointByDuration);
+        break;
+      case SortType.PRICE:
+        this.#tripPoints.sort(comparePointByPrice);
+        break;
+    }
+
+    this._currentSortType = sortType;
   }
 
   #handleSortTypeChange = (sortType) => {
     if (this.#currentSortType === sortType) {
-      console.log('currentSortType === sortType');
       return;
     }
 
-    // this.#sortPoints(sortType); TODO:
+    this.#sortPoints(sortType);
     this.#clearPointsList();
     this.#renderPoints();
   }
 
+
   #clearPointsList = () => {
-    console.log(this.#pointPresenter);
     this.#pointPresenter.forEach((presenter) => presenter.destroy());
     this.#pointPresenter.clear();
   }

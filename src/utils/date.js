@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 dayjs.extend(duration);
 
-const formatPointDuration = (seconds) => {
+export const formatPointDuration = (seconds) => {
   const eventDuration = dayjs.duration(seconds);
   let format;
   if (eventDuration.days() > 0) {
@@ -16,6 +16,8 @@ const formatPointDuration = (seconds) => {
   return eventDuration.format(format);
 };
 
-const parseDate = (date) => dayjs(date);
+export const parseDate = (date) => dayjs(date);
 
-export { formatPointDuration, parseDate };
+export const comparePointByStart = (pointA, pointB) => pointA.dateFrom - pointB.dateFrom;
+export const comparePointByDuration = (pointA, pointB) => (pointB.dateTo - pointB.dateFrom) - (pointA.dateTo - pointA.dateFrom);
+export const comparePointByPrice = (pointA, pointB) => pointB.basePrice - pointA.basePrice;

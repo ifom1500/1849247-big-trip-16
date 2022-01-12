@@ -11,7 +11,7 @@ const Mode = {
 };
 
 export default class PointPresenter {
-  #eventsListElement = null;
+  #container = null;
 
   #pointComponent = null;
   #pointEditComponent = null;
@@ -19,12 +19,12 @@ export default class PointPresenter {
   #point = null;
   #destinations = [];
 
-  #mode = null;
+  #mode = Mode.DEFAULT;
+  #changeMode = null;
 
-
-  constructor(eventsListElement) {
-    this.#eventsListElement = eventsListElement;
-    this.#mode = Mode.DEFAULT;
+  constructor(container, changeMode) {
+    this.#container = container;
+    this.#changeMode = changeMode;
   }
 
   init = (point, destinations) => {
@@ -38,7 +38,7 @@ export default class PointPresenter {
 
     // создаем экземпляры вьюшек
     this.#pointComponent = new TripPointView(this.#point);
-    this.#pointEditComponent = new FormCreateEditView(this.#point, this.#destinations, allOffersMap, this.#mode);
+    this.#pointEditComponent = new FormCreateEditView(this.#point, this.#destinations, allOffersMap, { isNew: false });
 
     // вешаем обработчики
     this.#pointComponent.setRollupButtonClickHandler(this.#handleEditClick);
@@ -48,16 +48,17 @@ export default class PointPresenter {
 
     // отрисовка с нуля
     if (prevPointComponent === null || prevPointEditComponent === null) {
-      render(this.#eventsListElement, this.#pointComponent, RenderPosition.BEFORE_END);
+      render(this.#container, this.#pointComponent, RenderPosition.BEFORE_END);
       return;
     }
 
     // перерисовка, если компонент уже существует
-    if (this.#eventsListElement.contains(prevPointComponent.element)) {
+    // возможно нужно удалить
+    if (this.#container.contains(prevPointComponent.element)) {
       replace(this.#pointComponent, prevPointComponent);
     }
 
-    if (this.#eventsListElement.contains(prevPointEditComponent.element)) {
+    if (this.#container.contains(prevPointEditComponent.element)) {
       replace(this.#pointEditComponent, prevPointEditComponent);
     }
 
@@ -65,30 +66,31 @@ export default class PointPresenter {
     remove(prevPointEditComponent);
   }
 
+
   destroy = () => {
-    console.log('destroy');
     remove(this.#pointComponent);
     remove(this.#pointEditComponent);
   }
 
-  // resetView() {
-  //   if (this.#mode !== Mode.DEFAULT) {
-  //     this.#replaceFormToPoint();
-  //   }
-  // }
+  resetView() {
+    if (this.#mode !== Mode.DEFAULT) {
+      this.#replaceFormToPoint();
+    }
+  }
+
 
   #replacePointToForm = () => {
     replace(this.#pointEditComponent, this.#pointComponent);
-    // this.#changeMode();
+
+    this.#changeMode();
     this.#mode = Mode.EDITING;
-    console.log('mode', this.#mode);
   }
 
   #replaceFormToPoint = () => {
     replace(this.#pointComponent, this.#pointEditComponent);
     this.#mode = Mode.DEFAULT;
-    console.log('mode', this.#mode);
   }
+
 
   #escKeyDownHandler = (evt) => {
     if (isEscapeEvent(evt)) {
