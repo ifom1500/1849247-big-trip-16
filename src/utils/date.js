@@ -18,6 +18,6 @@ export const formatPointDuration = (seconds) => {
 
 export const parseDate = (date) => dayjs(date);
 
-export const comparePointByStart = (pointA, pointB) => pointA.dateFrom - pointB.dateFrom;
+export const comparePointByDay = (pointA, pointB) => pointA.dateFrom - pointB.dateFrom;
 export const comparePointByDuration = (pointA, pointB) => (pointB.dateTo - pointB.dateFrom) - (pointA.dateTo - pointA.dateFrom);
 export const comparePointByPrice = (pointA, pointB) => pointB.basePrice - pointA.basePrice;

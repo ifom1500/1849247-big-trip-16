@@ -11,8 +11,8 @@ import PointPresenter from '../presenter/point-presenter.js';
 
 import { RenderPosition, render } from '../utils/render.js';
 import { DEFAULT_POINT_DRAFT_DATA } from '../mock/trip-point.js';
-import { SortType } from '../utils/common.js';
-import { comparePointByStart, comparePointByDuration, comparePointByPrice } from '../utils/date.js';
+import { SortType, updateItem } from '../utils/common.js';
+import { comparePointByDay, comparePointByDuration, comparePointByPrice } from '../utils/date.js';
 
 
 export default class GeneralPresenter {
@@ -25,6 +25,8 @@ export default class GeneralPresenter {
 
   #tripPoints = [];
   #destinations = [];
+  #sourcedTripPoints = [];
+  #allOffersMap = [];
 
   #menuComponent = new MenuView();
   #newEventButtonComponent = new NewEventButtonView();
@@ -37,13 +39,12 @@ export default class GeneralPresenter {
   #emptyListComponent = new EmptyListView();
 
   #pointPresenter = new Map();
-  #currentSortType = null;
+  #currentSortType = SortType.DAY;
 
-  constructor(headerContainer, mainContainer) {
+  constructor(headerContainer, mainContainer, allOffersMap) {
     this.#headerElement = headerContainer;
     this.#mainElement = mainContainer;
-
-    this.#currentSortType = SortType.DAY;
+    this.#allOffersMap = allOffersMap;
   }
 
   init(tripPoints, destinations) {
@@ -52,8 +53,11 @@ export default class GeneralPresenter {
     this.#navigationElement = this.#headerElement.querySelector('.trip-controls__navigation');
     this.#mainContainerElement = this.#mainElement.querySelector('.page-main__container');
 
-    this.#tripPoints = [...tripPoints];
+    const sortedPoints = [...tripPoints].sort(comparePointByDay);
     this.#destinations = [...destinations];
+
+    this.#tripPoints = sortedPoints;
+    this.#sourcedTripPoints = [...sortedPoints];
 
     this.#renderSite();
   }
@@ -120,7 +124,7 @@ export default class GeneralPresenter {
   // ОТРИСОВКА ОДНОЙ ТОЧКИ
 
   #renderPoint = (point) => {
-    const pointPresenter = new PointPresenter(this.#eventsListComponent, this.#handleModeChange);
+    const pointPresenter = new PointPresenter(this.#eventsListComponent, this.#handlePointChange, this.#handleModeChange, this.#allOffersMap);
     pointPresenter.init(point, this.#destinations);
 
     this.#pointPresenter.set(point.id, pointPresenter);
@@ -136,7 +140,7 @@ export default class GeneralPresenter {
   #sortPoints = (sortType) => {
     switch (sortType) {
       case SortType.DAY:
-        this.#tripPoints.sort(comparePointByStart);
+        this.#tripPoints.sort(comparePointByDay);
         break;
       case SortType.TIME:
         this.#tripPoints.sort(comparePointByDuration);
@@ -146,7 +150,7 @@ export default class GeneralPresenter {
         break;
     }
 
-    this._currentSortType = sortType;
+    this.#currentSortType = sortType;
   }
 
   #handleSortTypeChange = (sortType) => {
@@ -163,5 +167,10 @@ export default class GeneralPresenter {
   #clearPointsList = () => {
     this.#pointPresenter.forEach((presenter) => presenter.destroy());
     this.#pointPresenter.clear();
+  }
+
+  #handlePointChange = (updatedPoint) => {
+    this.#sourcedTripPoints = updateItem(this.#sourcedTripPoints, updatedPoint);
+    this.#pointPresenter.get(updatedPoint.id).init(updatedPoint, this.#destinations);
   }
 }

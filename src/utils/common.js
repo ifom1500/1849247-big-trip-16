@@ -1,6 +1,12 @@
 const ESCAPE_KEYS = ['Escape', 'Esc'];
 
-const capitalise = (word) => `${word[0].toUpperCase()}${word.slice(1)}`;
+const capitalize = (word) => {
+  if (word[0]) {
+    return `${word[0].toUpperCase()}${word.slice(1)}`;
+  }
+
+  return '';
+};
 
 const isEscapeEvent = (evt) => ESCAPE_KEYS.includes(evt.key);
 
@@ -24,4 +30,4 @@ const SortType = {
   PRICE: 'price',
 };
 
-export { capitalise, isEscapeEvent, updateItem, SortType };
+export { capitalize, isEscapeEvent, updateItem, SortType };

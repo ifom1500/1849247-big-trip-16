@@ -164,7 +164,7 @@ const generateTripPoint = (
     dateFrom: parseDate(dateFromString),
     dateTo: parseDate(dateToString),
     destination: destinations[0],
-    id: generatePoorId(),
+    id: String(generatePoorId()),
     isFavorite: Boolean(getRandomInteger(0, 1)),
     type: 'bus',
     offers: [

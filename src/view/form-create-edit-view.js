@@ -1,14 +1,14 @@
 import AbstractView from './abstract-view.js';
-import { capitalise } from '../utils/common.js';
+import { capitalize } from '../utils/common.js';
 
 // Получить массив офферов с признаком активности
 const getRenderedWithCheckboxOffers = (allOffers, pointOffers) => {
-  const renderedOffers = allOffers.reduce((array, offer) => {
-    array.push({
+  const renderedOffers = allOffers.reduce((offers, offer) => {
+    offers.push({
       ...offer,
       isChecked: pointOffers.some(({ id }) => id === offer.id),
     });
-    return array;
+    return offers;
   }, []);
 
   return renderedOffers;
@@ -161,7 +161,7 @@ const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers,
 
         <div class="event__field-group  event__field-group--destination">
           <label class="event__label  event__type-output" for="event-destination-1">
-            ${capitalise(type)}
+            ${capitalize(type)}
           </label>
           <input
             class="event__input  event__input--destination"

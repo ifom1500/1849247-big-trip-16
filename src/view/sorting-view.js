@@ -42,6 +42,5 @@ export default class SortingView extends AbstractView {
 
   #sortTypeChangeHandler = (evt) => {
     this._callback.sortTypeChange(evt.target.dataset.sortType);
-    console.log('change sortType ->', evt.target.dataset.sortType);
   }
 }
