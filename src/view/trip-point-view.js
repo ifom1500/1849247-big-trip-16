@@ -1,5 +1,5 @@
 import AbstractView from './abstract-view.js';
-import { capitalise } from '../utils/common.js';
+import { capitalize } from '../utils/common.js';
 import { formatPointDuration } from '../utils/date.js';
 
 // Генерируем один оффер
@@ -32,7 +32,7 @@ const createPointTemplate = (point) => {
 
   const pointDuration = formatPointDuration(dateTo - dateFrom);
 
-  const starClassName = isFavorite
+  const favoriteClassName = isFavorite
     ? 'event__favorite-btn--active'
     : '';
 
@@ -49,7 +49,7 @@ const createPointTemplate = (point) => {
           src="img/icons/${type}.png"
           alt="Event type icon">
       </div>
-      <h3 class="event__title">${capitalise(type)} ${destination.name}</h3>
+      <h3 class="event__title">${capitalize(type)} ${destination.name}</h3>
       <div class="event__schedule">
         <p class="event__time">
           <time
@@ -72,7 +72,7 @@ const createPointTemplate = (point) => {
       ${createEventOffersListTemplate(offers)}
 
       <button
-        class="event__favorite-btn ${starClassName}"
+        class="event__favorite-btn ${favoriteClassName}"
         type="button">
         <span class="visually-hidden">Add to favorite</span>
         <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -101,6 +101,11 @@ export default class TripPointView extends AbstractView{
     return createPointTemplate(this.#point);
   }
 
+  setFavoriteClickHandler = (callback) => {
+    this._callback.favoriteClick = callback;
+    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteClickHandler);
+  }
+
   setRollupButtonClickHandler = (callback) => {
     this._callback.rollupButtonClick = callback;
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupButtonClickHandler);
@@ -108,5 +113,9 @@ export default class TripPointView extends AbstractView{
 
   #rollupButtonClickHandler = () => {
     this._callback.rollupButtonClick();
+  }
+
+  #favoriteClickHandler = () => {
+    this._callback.favoriteClick();
   }
 }

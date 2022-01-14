@@ -35,8 +35,6 @@ export const DEFAULT_POINT_DRAFT_DATA = {
   ],
 };
 
-export const POINT_COUNT = 3;
-
 const OFFER_TITLES = [
   // taxi
   'Upgrade to a business class',
@@ -166,7 +164,7 @@ const generateTripPoint = (
     dateFrom: parseDate(dateFromString),
     dateTo: parseDate(dateToString),
     destination: destinations[0],
-    id: '0',
+    id: String(generatePoorId()),
     isFavorite: Boolean(getRandomInteger(0, 1)),
     type: 'bus',
     offers: [
@@ -184,14 +182,26 @@ export const tripPoints = [
   ),
   generateTripPoint(
     {
-      dateFromString: '2019-07-11T11:22:13.375Z',
-      dateToString: '2019-07-11T17:54:22.854Z',
+      dateFromString: '2019-07-12T11:22:13.375Z',
+      dateToString: '2019-07-13T17:54:22.854Z',
     }
   ),
   generateTripPoint(
     {
-      dateFromString: '2019-07-11T17:54:22.854Z',
-      dateToString: '2019-07-13T08:03:00.375Z',
+      dateFromString: '2019-07-13T17:54:22.854Z',
+      dateToString: '2019-07-15T08:03:00.375Z',
+    }
+  ),
+  generateTripPoint(
+    {
+      dateFromString: '2019-07-17T17:54:22.854Z',
+      dateToString: '2019-07-18T19:05:00.375Z',
+    }
+  ),
+  generateTripPoint(
+    {
+      dateFromString: '2019-07-20T17:54:22.854Z',
+      dateToString: '2019-07-20T16:12:00.375Z',
     }
   ),
 ];
