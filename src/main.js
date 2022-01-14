@@ -5,6 +5,6 @@ import { allOffersMap } from './mock/trip-point.js';
 const headerElement = document.querySelector('.page-header'); // ok
 const mainElement = document.querySelector('.page-main'); // ok
 
-const generalPresenter = new GeneralPresenter(headerElement, mainElement, allOffersMap);
+const generalPresenter = new GeneralPresenter(headerElement, mainElement);
 
-generalPresenter.init(tripPoints, destinations);
+generalPresenter.init(tripPoints, destinations, allOffersMap);

@@ -41,13 +41,12 @@ export default class GeneralPresenter {
   #pointPresenter = new Map();
   #currentSortType = SortType.DAY;
 
-  constructor(headerContainer, mainContainer, allOffersMap) {
+  constructor(headerContainer, mainContainer) {
     this.#headerElement = headerContainer;
     this.#mainElement = mainContainer;
-    this.#allOffersMap = allOffersMap;
   }
 
-  init(tripPoints, destinations) {
+  init(tripPoints, destinations, allOffersMap) {
     this.#tripMainElement = this.#headerElement.querySelector('.trip-main');
     this.#tripControlsElement = this.#headerElement.querySelector('.trip-controls');
     this.#navigationElement = this.#headerElement.querySelector('.trip-controls__navigation');
@@ -58,6 +57,7 @@ export default class GeneralPresenter {
 
     this.#tripPoints = sortedPoints;
     this.#sourcedTripPoints = [...sortedPoints];
+    this.#allOffersMap = allOffersMap;
 
     this.#renderSite();
   }

@@ -102,8 +102,8 @@ export default class TripPointView extends AbstractView{
   }
 
   setFavoriteClickHandler = (callback) => {
-    this._callback.favoriteClick = callback;
-    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteClickHandler);
+    this._callback.favoriteButtonClick = callback;
+    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteButtonClickHandler);
   }
 
   setRollupButtonClickHandler = (callback) => {
@@ -115,7 +115,7 @@ export default class TripPointView extends AbstractView{
     this._callback.rollupButtonClick();
   }
 
-  #favoriteClickHandler = () => {
-    this._callback.favoriteClick();
+  #favoriteButtonClickHandler = () => {
+    this._callback.favoriteButtonClick();
   }
 }

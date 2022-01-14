@@ -1,12 +1,6 @@
 const ESCAPE_KEYS = ['Escape', 'Esc'];
 
-const capitalize = (word) => {
-  if (word[0]) {
-    return `${word[0].toUpperCase()}${word.slice(1)}`;
-  }
-
-  return '';
-};
+const capitalize = (text) => `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
 
 const isEscapeEvent = (evt) => ESCAPE_KEYS.includes(evt.key);
 
