@@ -1,6 +1,17 @@
 import AbstractView from './abstract-view.js';
 import { capitalize } from '../utils/common.js';
 
+const BLANK_POINT = {
+  basePrice: 0,
+  dateFrom: '',
+  dateTo: '',
+  destination: '',
+  id: '',
+  isFavorite: false,
+  type: 'bus', // как константу записать
+  offers: [],
+};
+
 // Получить массив офферов с признаком активности
 const getRenderedWithCheckboxOffers = (allOffers, pointOffers) => {
   const renderedOffers = allOffers.reduce((offers, offer) => {
@@ -126,14 +137,16 @@ const createPhotoContainerTemplate = (pictures, isModeCreate) => {
 };
 
 // Функция создания шаблона формы редактирования точки
-const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers, isModeCreate) => {
+const createFormEditTemplate = (data, destinations, renderedWithCheckboxOffers, isModeCreate) => {
   const {
     type,
     dateFrom,
     dateTo,
     destination,
     basePrice,
-  } = point;
+  } = data;
+
+  console.log(destinations);
 
   const destinationListTemplate = createDestinationListTemplate(destinations);
   const eventTypeListTemplate = createEventTypeListTemplate();
@@ -228,25 +241,26 @@ const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers,
 };
 
 export default class FormCreateEditView extends AbstractView {
-  #point = null;
-  #destination = null;
+  #destinations = null;
   #allOffersMap = null;
   #isModeCreate = false;
 
-  constructor(point, destination, offers, isModeCreate) {
+  constructor(point = BLANK_POINT, destinations, offers, isModeCreate) {
     super();
 
-    this.#point = point;
-    this.#destination = destination;
+    this.#destinations = destinations;
     this.#allOffersMap = offers;
     this.#isModeCreate = isModeCreate;
+
+    // ИНФОРМАЦИЯ -> НАЧАЛЬНОЕ СОТОЯНИЕ
+    this._data = FormCreateEditView.parsePointToData(point);
   }
 
   get template() {
     return createFormEditTemplate (
-      this.#point,
-      this.#destination,
-      getRenderedWithCheckboxOffers(this.#allOffersMap[this.#point.type] || [], this.#point.offers),
+      this._data,
+      this.#destinations,
+      getRenderedWithCheckboxOffers(this.#allOffersMap[this._data.type] || [], this._data.offers),
       this.#isModeCreate
     );
   }
@@ -272,10 +286,39 @@ export default class FormCreateEditView extends AbstractView {
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this._callback.formSubmit();
+    // СОСТОЯНИЕ В ИНФОРМАЦИЮ
+    this._callback.formSubmit(FormCreateEditView.parseDataToPoint(this._data));
   }
 
   #resetButtonClickHandler = () => {
     this._callback.resetButtonClick();
+  }
+
+  // ИНФОРМАЦИЯ -> СОТОЯНИЕ
+  // Берем данные точки -> выставляем предикаты
+  static parsePointToData = (point) => {
+    const currentDestination = point.destination
+      ? this.#destinations.find(({name}) => name === point.destination)
+      : null;
+
+    console.log(currentDestination);
+
+    return {
+      ...point,
+      isDescriptionExists: !!currentDestination.description,
+      isPicturesExist: !!currentDestination.pictures.length,
+      isOffersExist: !!point.offers,
+    };
+  };
+
+  // СОСТОЯНИЕ -> ИНФОРМАЦИЯ
+  static parseDataToPoint(data) {
+    const point = {...data};
+
+    delete point.isDescriptionExists;
+    delete point.isPicturesExist;
+    delete point.isOffersExist;
+
+    return point;
   }
 }
