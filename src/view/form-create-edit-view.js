@@ -1,4 +1,4 @@
-import AbstractView from './abstract-view.js';
+import SmartView from './smart-view.js';
 import { capitalize } from '../utils/common.js';
 
 const BLANK_POINT = {
@@ -118,12 +118,8 @@ const createPhotoItemTemplate = ({ src, description }) =>
   `<img class="event__photo" src=${src} alt=${description}>`;
 
 // Собираем все изображение в список. Если нет изображений - не показываем блок
-const createPhotoContainerTemplate = (pictures, isModeCreate) => {
-  if (!isModeCreate) {
-    return '';
-  }
-
-  if (pictures.length) {
+const createPhotoContainerTemplate = (pictures, isPicturesExist) => {
+  if (isPicturesExist) {
     return (
       `<div class="event__photos-container">
         <div class="event__photos-tape">
@@ -137,16 +133,17 @@ const createPhotoContainerTemplate = (pictures, isModeCreate) => {
 };
 
 // Функция создания шаблона формы редактирования точки
-const createFormEditTemplate = (data, destinations, renderedWithCheckboxOffers, isModeCreate) => {
+const createFormEditTemplate = (data, destinations, renderedWithCheckboxOffers) => {
   const {
     type,
     dateFrom,
     dateTo,
     destination,
     basePrice,
+    isPicturesExist
   } = data;
 
-  console.log(destinations);
+  console.log(data);
 
   const destinationListTemplate = createDestinationListTemplate(destinations);
   const eventTypeListTemplate = createEventTypeListTemplate();
@@ -233,37 +230,39 @@ const createFormEditTemplate = (data, destinations, renderedWithCheckboxOffers, 
           <h3 class="event__section-title  event__section-title--destination">Destination</h3>
           <p class="event__destination-description">${destination.description}</p>
 
-          ${createPhotoContainerTemplate(destination.pictures, isModeCreate)}
+          ${createPhotoContainerTemplate(destination.pictures, isPicturesExist)}
         </section>
       </section>
     </form>
   </li>`;
 };
 
-export default class FormCreateEditView extends AbstractView {
+export default class FormCreateEditView extends SmartView {
   #destinations = null;
   #allOffersMap = null;
-  #isModeCreate = false;
 
-  constructor(point = BLANK_POINT, destinations, offers, isModeCreate) {
+  constructor(point = BLANK_POINT, destinations, offers) {
     super();
 
     this.#destinations = destinations;
     this.#allOffersMap = offers;
-    this.#isModeCreate = isModeCreate;
 
     // ИНФОРМАЦИЯ -> НАЧАЛЬНОЕ СОТОЯНИЕ
-    this._data = FormCreateEditView.parsePointToData(point);
+    this._data = FormCreateEditView.parsePointToData(point, this.#destinations);
+
+    this.#setInnerHandlers();
   }
 
   get template() {
     return createFormEditTemplate (
       this._data,
       this.#destinations,
-      getRenderedWithCheckboxOffers(this.#allOffersMap[this._data.type] || [], this._data.offers),
-      this.#isModeCreate
+      getRenderedWithCheckboxOffers(this.#allOffersMap[this._data.type] || [], this._data.offers)
     );
   }
+
+
+
 
   setRollupButtonClickHandler = (callback) => {
     this._callback.rollupButtonClick = callback;
@@ -280,6 +279,31 @@ export default class FormCreateEditView extends AbstractView {
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#resetButtonClickHandler);
   }
 
+
+
+
+  #setInnerHandlers = () => {
+    this.element.querySelector('.event__type-group').addEventListener('change', this.#changeTypeButtonHandler);
+
+    this.element.querySelector('.event__input--destination').addEventListener('change', this.#changeDestinationInputHandler);
+
+    this.element.querySelector('.event__input--price').addEventListener('input', this.#changePriceInputHandler);
+  }
+
+  restoreHandlers = () => {
+    this.setInnerHandler();
+    this.setRollupButtonClickHandler(this._callback.rollupButtonClick);
+    this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setResetButtonClickHandler(this._callback.resetButtonClick);
+  }
+
+  reset(event) {
+    this.updateData(FormCreateEditView.parseEventToData(event));
+  }
+
+
+
+
   #rollupButtonClickHandler = () => {
     this._callback.rollupButtonClick();
   }
@@ -294,14 +318,37 @@ export default class FormCreateEditView extends AbstractView {
     this._callback.resetButtonClick();
   }
 
+
+
+
+  #changePriceInputHandler = (evt) => {
+    evt.preventDefault();
+    this.updateData({
+      basePrice: evt.currentTarget.value,
+    }, true);
+  }
+
+  #changeDestinationInputHandler = (evt) => {
+
+  }
+
+  #changeTypeButtonHandler = (evt) => {
+    evt.preventDefault();
+    this.updateData({
+      type: evt.target.value
+    });
+  }
+
+
+
+
+
   // ИНФОРМАЦИЯ -> СОТОЯНИЕ
   // Берем данные точки -> выставляем предикаты
-  static parsePointToData = (point) => {
+  static parsePointToData = (point, destinations) => {
     const currentDestination = point.destination
-      ? this.#destinations.find(({name}) => name === point.destination)
+      ? destinations.find((destination) => destination.name === point.destination.name)
       : null;
-
-    console.log(currentDestination);
 
     return {
       ...point,
