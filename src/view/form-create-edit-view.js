@@ -12,19 +12,6 @@ const BLANK_POINT = {
   offers: [],
 };
 
-// Получить массив офферов с признаком активности
-const getRenderedWithCheckboxOffers = (allOffers, pointOffers) => {
-  const renderedOffers = allOffers.reduce((offers, offer) => {
-    offers.push({
-      ...offer,
-      isChecked: pointOffers.some(({ id }) => id === offer.id),
-    });
-    return offers;
-  }, []);
-
-  return renderedOffers;
-};
-
 // ПУНКТ НАЗНАЧЕНИЯ
 const createDestinationListTemplate = (destinations) =>
   destinations.map(({ name }) => `<option value="${name}"></option>`).join('');
@@ -143,8 +130,6 @@ const createFormEditTemplate = (data, destinations, renderedWithCheckboxOffers) 
     isPicturesExist
   } = data;
 
-  console.log(data);
-
   const destinationListTemplate = createDestinationListTemplate(destinations);
   const eventTypeListTemplate = createEventTypeListTemplate();
   const offersSectionTemplate = createOffersSectionTemplate(renderedWithCheckboxOffers);
@@ -257,11 +242,23 @@ export default class FormCreateEditView extends SmartView {
     return createFormEditTemplate (
       this._data,
       this.#destinations,
-      getRenderedWithCheckboxOffers(this.#allOffersMap[this._data.type] || [], this._data.offers)
+      this.getRenderedWithCheckboxOffers(this.#allOffersMap[this._data.type] || [], this._data.offers)
     );
   }
 
+  // Получить массив офферов с признаком активности
+  getRenderedWithCheckboxOffers = (allOffers, pointOffers) => {
+    const renderedOffers = allOffers.reduce((offers, offer) => {
+      offers.push({
+        ...offer,
+        isChecked: pointOffers.some(({ id }) => id === offer.id),
+      });
+      return offers;
+    }, []);
 
+    console.log(renderedOffers);
+    return renderedOffers;
+  };
 
 
   setRollupButtonClickHandler = (callback) => {
@@ -279,11 +276,8 @@ export default class FormCreateEditView extends SmartView {
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#resetButtonClickHandler);
   }
 
-
-
-
   #setInnerHandlers = () => {
-    this.element.querySelector('.event__type-group').addEventListener('change', this.#changeTypeButtonHandler);
+    this.element.querySelector('.event__type-group').addEventListener('change', this.#changeTypeInputHandler);
 
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#changeDestinationInputHandler);
 
@@ -291,14 +285,14 @@ export default class FormCreateEditView extends SmartView {
   }
 
   restoreHandlers = () => {
-    this.setInnerHandler();
+    this.#setInnerHandlers();
     this.setRollupButtonClickHandler(this._callback.rollupButtonClick);
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setResetButtonClickHandler(this._callback.resetButtonClick);
   }
 
-  reset(event) {
-    this.updateData(FormCreateEditView.parseEventToData(event));
+  reset = (point) => {
+    this.updateData(FormCreateEditView.parsePointToData(point));
   }
 
 
@@ -318,9 +312,6 @@ export default class FormCreateEditView extends SmartView {
     this._callback.resetButtonClick();
   }
 
-
-
-
   #changePriceInputHandler = (evt) => {
     evt.preventDefault();
     this.updateData({
@@ -329,37 +320,58 @@ export default class FormCreateEditView extends SmartView {
   }
 
   #changeDestinationInputHandler = (evt) => {
+    evt.preventDefault();
+    const inputDestination = evt.currentTarget;
 
+    if (this.#destinations.every(({name}) => name !== inputDestination.value)) {
+      // Введеного значения нет в массиве пунктов назначений
+      this.updateData({
+        destination: {
+          name: inputDestination.value,
+          pictures: [],
+          description: '',
+        },
+        isDescriptionExists: false,
+        isPicturesExist: false,
+      }, true);
+    } else {
+      // Такой пункт уже есть в массиве
+      const currentDestination = this.#destinations.find(({name}) => name === inputDestination.value);
+      this.updateData({
+        destination: {...currentDestination},
+        isDescriptionExists: !!currentDestination.description,
+        isPicturesExist: !!currentDestination.pictures.length,
+      });
+    }
   }
 
-  #changeTypeButtonHandler = (evt) => {
+  #changeTypeInputHandler = (evt) => {
     evt.preventDefault();
+    console.log('changeTypeInputHandler');
+    console.log('evt.target.value -> ', evt.target.value);
     this.updateData({
-      type: evt.target.value
+      type: evt.target.value,
     });
   }
-
-
-
 
 
   // ИНФОРМАЦИЯ -> СОТОЯНИЕ
   // Берем данные точки -> выставляем предикаты
   static parsePointToData = (point, destinations) => {
     const currentDestination = point.destination
-      ? destinations.find((destination) => destination.name === point.destination.name)
+      ? destinations.find(({name}) => name === point.destination.name)
       : null;
 
     return {
       ...point,
-      isDescriptionExists: !!currentDestination.description,
-      isPicturesExist: !!currentDestination.pictures.length,
-      isOffersExist: !!point.offers,
+      isDescriptionExists: !!currentDestination?.description,
+      isPicturesExist: Boolean(currentDestination?.pictures && currentDestination.pictures.length),
+      isOffersExist: Boolean(point.offers && point.offers.length),
     };
   };
 
   // СОСТОЯНИЕ -> ИНФОРМАЦИЯ
-  static parseDataToPoint(data) {
+  static parseDataToPoint = (data) => {
     const point = {...data};
 
     delete point.isDescriptionExists;
