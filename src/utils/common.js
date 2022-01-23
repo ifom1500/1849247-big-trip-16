@@ -24,4 +24,38 @@ const SortType = {
   PRICE: 'price',
 };
 
-export { capitalize, isEscapeEvent, updateItem, SortType };
+const PointType = {
+  TAXI: 'taxi',
+  BUS: 'bus',
+  TRAIN: 'train',
+  SHIP: 'ship',
+  DRIVE: 'drive',
+  FLIGHT: 'flight',
+  CHECK_IN: 'check-in',
+  SIGHTSEEING: 'sightseeing',
+  RESTAURANT: 'restaurant',
+};
+
+const getBlankPoint = (parseDateCallback) => (
+  {
+    basePrice: 0,
+    dateFrom: parseDateCallback(),
+    dateTo: parseDateCallback(),
+    destination: null,
+    id: '',
+    isFavorite: false,
+    type: PointType.BUS,
+    offers: [],
+  }
+);
+
+const debounce = (callback, timeoutDelay = 1000) => {
+  let timeoutId;
+
+  return (...rest) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => callback.apply(this, rest), timeoutDelay);
+  };
+};
+
+export { capitalize, isEscapeEvent, updateItem, SortType, PointType, getBlankPoint, debounce};

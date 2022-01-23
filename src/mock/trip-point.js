@@ -1,40 +1,5 @@
 import { parseDate } from '../utils/date.js';
 
-// Черновой вариант объекта с данными, которые будут подставляться по умолчанию
-export const DEFAULT_POINT_DRAFT_DATA = {
-  basePrice: 10,
-  dateFrom: parseDate('2019-07-10T22:55:56.845Z'),
-  dateTo: parseDate('2019-07-10T22:55:56.845Z'),
-  destination: {
-    description: 'Your description',
-    name: 'Your destination',
-    pictures: [
-      {
-        description: 'picture Racсoon 1',
-        src: 'http://picsum.photos/248/152?r=1',
-      },
-      {
-        description: 'picture Racсoon 2',
-        src: 'http://picsum.photos/248/152?r=2',
-      },
-      {
-        description: 'picture Racсoon 3',
-        src: 'http://picsum.photos/248/152?r=3',
-      },
-      {
-        description: 'picture Racсoon 4',
-        src: 'http://picsum.photos/248/152?r=4',
-      }
-    ],
-  },
-  id: '0',
-  isFavorite: false,
-  type: 'bus',
-  offers: [
-    {type: 'bus', offers: [{ id: 1, title: 'Video guide', price: 100 }]}
-  ],
-};
-
 const OFFER_TITLES = [
   // taxi
   'Upgrade to a business class',
@@ -68,32 +33,34 @@ const getRandomInteger = (a = 0, b = 1) => {
 // DESTINATION
 const generateDestination = (
   {
-    description = 'Racсoon description',
-    name = 'Racсoon City',
+    description = getRandomInteger(0, 1) ? 'Raccoon description' : '',
+    name = 'Raccoon City',
   } = {}) => (
   {
     description,
     name,
-    pictures: [
-      {
-        src: `http://picsum.photos/248/152?r=${getRandomInteger(1, 10)}`,
-        description: 'picture Racсoon 1'
-      },
-      {
-        src: `http://picsum.photos/248/152?r=${getRandomInteger(1, 10)}`,
-        description: 'picture Racсoon 2'
-      },
-      {
-        src: `http://picsum.photos/248/152?r=${getRandomInteger(1, 10)}`,
-        description: 'picture Racсoon 3'
-      }
-    ]
+    pictures: getRandomInteger(0, 1)
+      ? [
+        {
+          src: `http://picsum.photos/248/152?r=${getRandomInteger(1, 10)}`,
+          description: 'picture Raccoon 1'
+        },
+        {
+          src: `http://picsum.photos/248/152?r=${getRandomInteger(1, 10)}`,
+          description: 'picture Raccoon 2'
+        },
+        {
+          src: `http://picsum.photos/248/152?r=${getRandomInteger(1, 10)}`,
+          description: 'picture Raccoon 3'
+        }
+      ]
+      : []
   });
 
 export const destinations = [
   generateDestination(),
-  generateDestination({ name: 'Moscow', description: 'Moscow description' }),
-  generateDestination({ name: 'Hogvarts', description: 'Hogvarts description' }),
+  generateDestination({ name: 'Moscow', description: getRandomInteger(0, 1) ? 'Moscow description' : ''}),
+  generateDestination({ name: 'Hogvarts', description: getRandomInteger(0, 1) ? 'Hogvarts description' : 0 }),
 ];
 
 // OFFERS

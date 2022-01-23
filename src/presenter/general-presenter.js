@@ -10,10 +10,11 @@ import EmptyListView from '../view/empty-list-view.js';
 import PointPresenter from '../presenter/point-presenter.js';
 
 import { RenderPosition, render } from '../utils/render.js';
-import { DEFAULT_POINT_DRAFT_DATA } from '../mock/trip-point.js';
-import { SortType, updateItem } from '../utils/common.js';
+import { SortType, updateItem, getBlankPoint } from '../utils/common.js';
+import { parseDate } from '../utils/date.js';
 import { comparePointByDay, comparePointByDuration, comparePointByPrice } from '../utils/date.js';
 
+const BLANK_POINT = getBlankPoint(parseDate);
 
 export default class GeneralPresenter {
   #headerElement = null;
@@ -86,7 +87,7 @@ export default class GeneralPresenter {
     render(this.#tripMainElement, this.#newEventButtonComponent, RenderPosition.BEFORE_END);
 
     this.#newEventButtonComponent.setButtonClickHandler(() => {
-      this.#renderPoint(DEFAULT_POINT_DRAFT_DATA);
+      this.#renderPoint(BLANK_POINT);
     });
   }
 
