@@ -14,7 +14,7 @@ import { SortType, updateItem, getBlankPoint } from '../utils/common.js';
 import { parseDate } from '../utils/date.js';
 import { comparePointByDay, comparePointByDuration, comparePointByPrice } from '../utils/date.js';
 
-const BLANK_POINT = getBlankPoint(parseDate);
+const blankPoint = getBlankPoint(parseDate);
 
 export default class GeneralPresenter {
   #headerElement = null;
@@ -87,7 +87,7 @@ export default class GeneralPresenter {
     render(this.#tripMainElement, this.#newEventButtonComponent, RenderPosition.BEFORE_END);
 
     this.#newEventButtonComponent.setButtonClickHandler(() => {
-      this.#renderPoint(BLANK_POINT);
+      this.#renderPoint(blankPoint);
     });
   }
 

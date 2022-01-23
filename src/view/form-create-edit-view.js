@@ -1,9 +1,9 @@
 import SmartView from './smart-view.js';
 import { capitalize } from '../utils/common.js';
 import { parseDate } from '../utils/date.js';
-import { PointType, /*debounce**/ } from '../utils/common.js';
+import { PointType } from '../utils/common.js';
 import flatpickr from 'flatpickr';
-import '../../node_modules/flatpickr/dist/flatpickr.min.css';
+import 'flatpickr/dist/flatpickr.min.css';
 
 const POINT_TYPES = Object.values(PointType);
 
@@ -34,11 +34,12 @@ const createOfferTemplate = ({ id, title, price, isChecked = false} = {}) => (
       type="checkbox"
       name="${title}"
       ${isChecked ? 'checked' : ''}
+      data-price="${price}"
     >
     <label class="event__offer-label" for="${id}">
       <span class="event__offer-title">${title}</span>
       &plus;&euro;&nbsp;
-      <span class="event__offer-price" data-price="${price}">${price}</span>
+      <span class="event__offer-price">${price}</span>
     </label>
   </div>`
 );
@@ -205,10 +206,10 @@ export default class FormCreateEditView extends SmartView {
   }
 
 
-  //EVENT SETTERS
+  // EVENT SETTERS
 
   setFormSubmitHandler = (callback) => {
-    this._callback.formSubmit = callback; //
+    this._callback.formSubmit = callback;
     this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
   }
 
@@ -220,6 +221,51 @@ export default class FormCreateEditView extends SmartView {
   setRollupButtonClickHandler = (callback) => {
     this._callback.rollupButtonClick = callback;
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupButtonClickHandler);
+  }
+
+  #setInnerHandlers = () => {
+    const element = this.element;
+    const destinationInput = element.querySelector('.event__input--destination');
+
+    destinationInput.addEventListener('change', this.#destinationInputChangeHandler);
+    destinationInput.addEventListener('focus', this.#destinationInputFocusHandler);
+
+    destinationInput.addEventListener('keydown', this.#destinationInputKeydownHandler);
+
+    element.querySelector('.event__type-group').addEventListener('change', this.#typeInputChangeHandler);
+    element.querySelector('.event__input--price').addEventListener('input', this.#priceInputChangeHandler);
+  }
+
+
+  // DATAPICKERS SETTERS
+
+  #setStartDatePicker = () => {
+    this.#startDatePicker = flatpickr(
+      this.element.querySelector('#event-start-time-1'),
+      {
+        enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        maxDate: this._data.dateTo ? this._data.dateTo.toISOString() : '',
+        onChange: this.#startDateChangeHandler,
+      }
+    );
+  }
+
+  #setEndDatePicker = () => {
+    this.#endDatePicker = flatpickr(
+      this.element.querySelector('#event-end-time-1'),
+      {
+        enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        minDate: this._data.dateFrom ? this._data.dateFrom.toISOString() : '',
+        onChange: this.#endDateChangeHandler,
+      }
+    );
+  }
+
+  setDatePickers = () => {
+    this.#setStartDatePicker();
+    this.#setEndDatePicker();
   }
 
   restoreHandlers = () => {
@@ -237,41 +283,7 @@ export default class FormCreateEditView extends SmartView {
     ), false);
   }
 
-
-  // DATAPICKERS SETTERS
-
-  #setStartDatePicker = () => {
-    this.#startDatePicker = flatpickr(
-      this.element.querySelector('#event-start-time-1'),
-      {
-        enableTime: true,
-        dateFormat: 'd/m/y H:i',
-        maxDate: this._data.dateTo ? parseDate(this._data.dateTo).toISOString() : '',
-        onChange: this.#startDateChangeHandler,
-      }
-    );
-  }
-
-  #setEndDatePicker = () => {
-    this.#endDatePicker = flatpickr(
-      this.element.querySelector('#event-end-time-1'),
-      {
-        enableTime: true,
-        dateFormat: 'd/m/y H:i',
-        minDate: this._data.dateFrom ? parseDate(this._data.dateFrom).toISOString() : '',
-        onChange: this.#endDateChangeHandler,
-      }
-    );
-  }
-
-  setDatePickers = () => {
-    this.#setStartDatePicker();
-    this.#setEndDatePicker();
-  }
-
-  removeElement = () => {
-    super.removeElement();
-
+  removeDatePickers = () => {
     if (this.#startDatePicker) {
       this.#startDatePicker.destroy();
       this.#startDatePicker = null;
@@ -283,49 +295,34 @@ export default class FormCreateEditView extends SmartView {
     }
   }
 
+  removeElement = () => {
+    super.removeElement();
+    this.removeDatePickers();
+  }
+
 
   // CALLBACK HANDLERS
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
 
-    const checkedOffers = [];
-    const offersInputNodes = this.element.querySelectorAll('.event__offer-checkbox');
-    const offersLabelNodes = this.element.querySelectorAll('.event__offer-label');
-    const offersLabelElements = Array.from(offersLabelNodes);
+    const offers = [];
+    const checkedOffers = this.element.querySelectorAll('.event__offer-checkbox:checked');
 
-    offersInputNodes.forEach((inputNode) => {
-      if (inputNode.checked) {
-        const labelElement = offersLabelElements.find(({htmlFor}) => htmlFor === inputNode.id);
-        const priceElement = labelElement.querySelector('.event__offer-price');
-
-        checkedOffers.push(
-          {
-            id: +inputNode.id,
-            title: inputNode.name,
-            price: +priceElement.dataset.price,
-          }
-        );
-      }
+    checkedOffers.forEach((offerElement) => {
+      offers.push(
+        {
+          id: +offerElement.id,
+          title: offerElement.name,
+          price: +offerElement.dataset.price,
+        }
+      );
     });
 
     const point = FormCreateEditView.parseDataToPoint(this._data);
-    point.offers = checkedOffers;
+    point.offers = offers;
 
     this._callback.formSubmit(point);
-  }
-
-  #setInnerHandlers = () => {
-    const element = this.element;
-    const destinationInput = element.querySelector('.event__input--destination');
-
-    destinationInput.addEventListener('change', this.#destinationInputChangeHandler);
-    destinationInput.addEventListener('focus', this.#destinationInputFocusHandler);
-
-    destinationInput.addEventListener('keydown', this.#destinationInputKeydownHandler);
-
-    element.querySelector('.event__type-group').addEventListener('change', this.#changeTypeInputHandler);
-    element.querySelector('.event__input--price').addEventListener('input', this.#changePriceInputHandler);
   }
 
   #destinationInputFocusHandler = (evt) => {
@@ -351,11 +348,9 @@ export default class FormCreateEditView extends SmartView {
     this._callback.resetButtonClick();
   }
 
-  #changePriceInputHandler = (evt) => {
+  #priceInputChangeHandler = (evt) => {
     evt.preventDefault();
     this.updateData({basePrice: +evt.target.value}, true);
-    // debounce(() => this.updateData({basePrice: +evt.target.value}, true));
-    // type="number" min="0" => basePrice: evt.target.valueAsNumber,
   }
 
   #destinationInputChangeHandler = (evt) => {
@@ -370,32 +365,35 @@ export default class FormCreateEditView extends SmartView {
 
     this.updateData({
       destination,
-      isDescriptionExists: !!destination.description,
+      isDescriptionExist: !!destination.description,
       isPicturesExist: !!destination.pictures.length,
-    });
+      isDestinationExist: !!destination.description || !!destination.pictures.length,
+    }, false);
   }
 
-  #changeTypeInputHandler = (evt) => {
+  #typeInputChangeHandler = (evt) => {
     evt.preventDefault();
 
     const type = evt.target.value;
     const typeOffers = this.#allOffersMap[type] ?? [];
     const offers = FormCreateEditView.getRenderedWithCheckboxOffers([], typeOffers);
 
-    this.updateData({type, offers}, false);
+    const isOffersExist = offers.length > 0;
+
+    this.updateData({type, offers, isOffersExist}, false);
   }
 
   #startDateChangeHandler = (newStartDate) => {
-    const newStartDateObject = parseDate(newStartDate);
-    this.updateData({dateFrom: newStartDateObject}, true);
+    const newStartDateConverted = parseDate(newStartDate);
+    this.updateData({dateFrom: newStartDateConverted}, true);
     this.#endDatePicker.destroy();
     this.#endDatePicker = null;
     this.#setEndDatePicker();
   }
 
   #endDateChangeHandler = (newEndDate) => {
-    const newEndDateObject = parseDate(newEndDate);
-    this.updateData({dateTo: newEndDateObject}, true);
+    const newEndDateConverted = parseDate(newEndDate);
+    this.updateData({dateTo: newEndDateConverted}, true);
     this.#setStartDatePicker();
   };
 
@@ -444,9 +442,10 @@ export default class FormCreateEditView extends SmartView {
     const point = {...data};
 
     delete point.isDestinationExist;
-    delete point.isDescriptionExists;
+    delete point.isDescriptionExist;
     delete point.isPicturesExist;
     delete point.isOffersExist;
+    delete point.destinationNames;
 
     return point;
   }
