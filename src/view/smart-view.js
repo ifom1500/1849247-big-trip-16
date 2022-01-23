@@ -3,12 +3,11 @@ import AbstractView from './abstract-view.js';
 export default class SmartView extends AbstractView {
   _data = {};
 
-  updateData = (update, justDataUpdating) => {
+  updateData = (update, justDataUpdating = true) => {
     if(!update) {
       return;
     }
 
-    // console.log еще нужны для разработки, будут удалены
     // console.log('--------------------------');
     // console.log('Before ->', this._data);
 
