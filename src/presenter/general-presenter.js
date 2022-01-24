@@ -10,10 +10,11 @@ import EmptyListView from '../view/empty-list-view.js';
 import PointPresenter from '../presenter/point-presenter.js';
 
 import { RenderPosition, render } from '../utils/render.js';
-import { DEFAULT_POINT_DRAFT_DATA } from '../mock/trip-point.js';
-import { SortType, updateItem } from '../utils/common.js';
+import { SortType, updateItem, getBlankPoint } from '../utils/common.js';
+import { parseDate } from '../utils/date.js';
 import { comparePointByDay, comparePointByDuration, comparePointByPrice } from '../utils/date.js';
 
+const blankPoint = getBlankPoint(parseDate);
 
 export default class GeneralPresenter {
   #headerElement = null;
@@ -41,13 +42,12 @@ export default class GeneralPresenter {
   #pointPresenter = new Map();
   #currentSortType = SortType.DAY;
 
-  constructor(headerContainer, mainContainer, allOffersMap) {
+  constructor(headerContainer, mainContainer) {
     this.#headerElement = headerContainer;
     this.#mainElement = mainContainer;
-    this.#allOffersMap = allOffersMap;
   }
 
-  init(tripPoints, destinations) {
+  init(tripPoints, destinations, allOffersMap) {
     this.#tripMainElement = this.#headerElement.querySelector('.trip-main');
     this.#tripControlsElement = this.#headerElement.querySelector('.trip-controls');
     this.#navigationElement = this.#headerElement.querySelector('.trip-controls__navigation');
@@ -58,6 +58,7 @@ export default class GeneralPresenter {
 
     this.#tripPoints = sortedPoints;
     this.#sourcedTripPoints = [...sortedPoints];
+    this.#allOffersMap = allOffersMap;
 
     this.#renderSite();
   }
@@ -86,7 +87,7 @@ export default class GeneralPresenter {
     render(this.#tripMainElement, this.#newEventButtonComponent, RenderPosition.BEFORE_END);
 
     this.#newEventButtonComponent.setButtonClickHandler(() => {
-      this.#renderPoint(DEFAULT_POINT_DRAFT_DATA);
+      this.#renderPoint(blankPoint);
     });
   }
 

@@ -1,12 +1,24 @@
 const ESCAPE_KEYS = ['Escape', 'Esc'];
 
-const capitalize = (word) => {
-  if (word[0]) {
-    return `${word[0].toUpperCase()}${word.slice(1)}`;
-  }
-
-  return '';
+const SortType = {
+  DAY: 'day',
+  TIME: 'time',
+  PRICE: 'price',
 };
+
+const PointType = {
+  TAXI: 'taxi',
+  BUS: 'bus',
+  TRAIN: 'train',
+  SHIP: 'ship',
+  DRIVE: 'drive',
+  FLIGHT: 'flight',
+  CHECK_IN: 'check-in',
+  SIGHTSEEING: 'sightseeing',
+  RESTAURANT: 'restaurant',
+};
+
+const capitalize = (text) => `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
 
 const isEscapeEvent = (evt) => ESCAPE_KEYS.includes(evt.key);
 
@@ -24,10 +36,17 @@ const updateItem = (items, update) => {
   ];
 };
 
-const SortType = {
-  DAY: 'day',
-  TIME: 'time',
-  PRICE: 'price',
-};
+const getBlankPoint = (parseDateCallback) => (
+  {
+    basePrice: 0,
+    dateFrom: parseDateCallback(),
+    dateTo: parseDateCallback(),
+    destination: null,
+    id: '',
+    isFavorite: false,
+    type: PointType.BUS,
+    offers: [],
+  }
+);
 
-export { capitalize, isEscapeEvent, updateItem, SortType };
+export { capitalize, isEscapeEvent, updateItem, SortType, PointType, getBlankPoint };

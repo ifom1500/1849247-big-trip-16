@@ -73,8 +73,9 @@ export default class PointPresenter {
     remove(this.#pointEditComponent);
   }
 
-  resetView() {
+  resetView = () => {
     if (this.#mode !== Mode.DEFAULT) {
+      this.#pointEditComponent.reset(this.#point);
       this.#replaceFormToPoint();
     }
   }
@@ -82,14 +83,18 @@ export default class PointPresenter {
 
   #replacePointToForm = () => {
     replace(this.#pointEditComponent, this.#pointComponent);
+    this.#pointEditComponent.setDatePickers();
 
     this.#changeMode();
     this.#mode = Mode.EDITING;
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
   #replaceFormToPoint = () => {
     replace(this.#pointComponent, this.#pointEditComponent);
     this.#mode = Mode.DEFAULT;
+    this.#pointEditComponent.removeDatePickers();
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
   #handleEditClick = () => {
@@ -102,7 +107,8 @@ export default class PointPresenter {
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
-  #handleFormSubmit = () => {
+  #handleFormSubmit = (point) => {
+    this.#changeData(point);
     this.#replaceFormToPoint();
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
@@ -119,6 +125,7 @@ export default class PointPresenter {
   #escKeyDownHandler = (evt) => {
     if (isEscapeEvent(evt)) {
       evt.preventDefault();
+      this.#pointEditComponent.reset(this.#point);
       this.#replaceFormToPoint();
       document.removeEventListener('keydown', this.#escKeyDownHandler);
     }

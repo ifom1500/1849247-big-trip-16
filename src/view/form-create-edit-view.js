@@ -1,78 +1,31 @@
-import AbstractView from './abstract-view.js';
+import SmartView from './smart-view.js';
 import { capitalize } from '../utils/common.js';
+import { parseDate } from '../utils/date.js';
+import { PointType } from '../utils/common.js';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 
-// Получить массив офферов с признаком активности
-const getRenderedWithCheckboxOffers = (allOffers, pointOffers) => {
-  const renderedOffers = allOffers.reduce((offers, offer) => {
-    offers.push({
-      ...offer,
-      isChecked: pointOffers.some(({ id }) => id === offer.id),
-    });
-    return offers;
-  }, []);
+const POINT_TYPES = Object.values(PointType);
 
-  return renderedOffers;
-};
-
-// ПУНКТ НАЗНАЧЕНИЯ
-const createDestinationListTemplate = (destinations) =>
-  destinations.map(({ name }) => `<option value="${name}"></option>`).join('');
-
-// ТИП
-// ["taxi", "bus", "train", "ship", "drive", "flight", "check-in", "sightseeing", "restaurant"]
-const createEventTypeListTemplate = () => (
-  `<fieldset class="event__type-group">
-    <legend class="visually-hidden">Event type</legend>
-
-    <div class="event__type-item">
-      <input id="event-type-taxi-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="taxi">
-      <label class="event__type-label  event__type-label--taxi" for="event-type-taxi-1">Taxi</label>
-    </div>
-
-    <div class="event__type-item">
-      <input id="event-type-bus-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="bus">
-      <label class="event__type-label  event__type-label--bus" for="event-type-bus-1">Bus</label>
-    </div>
-
-    <div class="event__type-item">
-      <input id="event-type-train-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="train">
-      <label class="event__type-label  event__type-label--train" for="event-type-train-1">Train</label>
-    </div>
-
-    <div class="event__type-item">
-      <input id="event-type-ship-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="ship">
-      <label class="event__type-label  event__type-label--ship" for="event-type-ship-1">Ship</label>
-    </div>
-
-    <div class="event__type-item">
-      <input id="event-type-drive-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="drive">
-      <label class="event__type-label  event__type-label--drive" for="event-type-drive-1">Drive</label>
-    </div>
-
-    <div class="event__type-item">
-      <input id="event-type-flight-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="flight" checked>
-      <label class="event__type-label  event__type-label--flight" for="event-type-flight-1">Flight</label>
-    </div>
-
-    <div class="event__type-item">
-      <input id="event-type-check-in-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="check-in">
-      <label class="event__type-label  event__type-label--check-in" for="event-type-check-in-1">Check-in</label>
-    </div>
-
-    <div class="event__type-item">
-      <input id="event-type-sightseeing-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="sightseeing">
-      <label class="event__type-label  event__type-label--sightseeing" for="event-type-sightseeing-1">Sightseeing</label>
-    </div>
-
-    <div class="event__type-item">
-      <input id="event-type-restaurant-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="restaurant">
-      <label class="event__type-label  event__type-label--restaurant" for="event-type-restaurant-1">Restaurant</label>
-    </div>
-  </fieldset>`
+const createEventTypeListTemplate = (currentType, pointTypes) => (
+  pointTypes.map((type) => (
+    `<div class="event__type-item">
+      <input
+        id="event-type-${type}-1"
+        class="event__type-input  visually-hidden"
+        type="radio"
+        name="event-type"
+        value="${type}"
+        ${type === currentType ? 'checked' : ''}
+      >
+      <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${capitalize(type)}</label>
+    </div>`)
+  ).join('')
 );
 
-// ОФФЕРЫ
-// Генерируем один оффер
+const createDestinationListTemplate = (destinationNames) =>
+  destinationNames.map((name) => `<option value="${name}"></option>`).join('');
+
 const createOfferTemplate = ({ id, title, price, isChecked = false} = {}) => (
   `<div class="event__offer-selector">
     <input
@@ -81,6 +34,7 @@ const createOfferTemplate = ({ id, title, price, isChecked = false} = {}) => (
       type="checkbox"
       name="${title}"
       ${isChecked ? 'checked' : ''}
+      data-price="${price}"
     >
     <label class="event__offer-label" for="${id}">
       <span class="event__offer-title">${title}</span>
@@ -90,54 +44,57 @@ const createOfferTemplate = ({ id, title, price, isChecked = false} = {}) => (
   </div>`
 );
 
-// Собираем все сгенерированные офферы
-const createOffersSectionTemplate = (offers) => (
-  `<section class="event__section  event__section--offers">
-    <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+const createOffersSectionTemplate = (offers, isOffersExist) => (
+  isOffersExist
+    ? `<section class="event__section  event__section--offers">
+      <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
-    <div class="event__available-offers">
-      ${offers.map(createOfferTemplate).join('')}
-    </div>
+      <div class="event__available-offers">
+        ${offers.map(createOfferTemplate).join('')}
+      </div>
+    </section>`
+    : ''
+);
+
+const createPhotoItemTemplate = ({ src, description }) => (`<img class="event__photo" src=${src} alt=${description}>`);
+
+const createDestinationSectionTemplate = (destination, isDescriptionExist, isPicturesExist) => (
+  `<section class="event__section  event__section--destination">
+    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+
+    ${isDescriptionExist
+    ? `<p class="event__destination-description">${destination.description}</p>`
+    : ''}
+
+    ${isPicturesExist
+    ? `<div class="event__photos-container">
+      <div class="event__photos-tape">
+        ${destination.pictures.map(createPhotoItemTemplate).join('')}
+      </div>
+    </div>`
+    : ''}
   </section>`
 );
 
-// ИЗОБРАЖЕНИЯ
-// Генерируем одно изображение
-const createPhotoItemTemplate = ({ src, description }) =>
-  `<img class="event__photo" src=${src} alt=${description}>`;
-
-// Собираем все изображение в список. Если нет изображений - не показываем блок
-const createPhotoContainerTemplate = (pictures, isModeCreate) => {
-  if (!isModeCreate) {
-    return '';
-  }
-
-  if (pictures.length) {
-    return (
-      `<div class="event__photos-container">
-        <div class="event__photos-tape">
-          ${pictures.map(createPhotoItemTemplate).join('')}
-        </div>
-      </div>`
-    );
-  }
-
-  return '';
-};
-
-// Функция создания шаблона формы редактирования точки
-const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers, isModeCreate) => {
+const createFormEditTemplate = (data) => {
   const {
     type,
+    offers,
     dateFrom,
     dateTo,
     destination,
     basePrice,
-  } = point;
+    destinationNames,
+    isDestinationExist,
+    isDescriptionExist,
+    isPicturesExist,
+    isOffersExist,
+  } = data;
 
-  const destinationListTemplate = createDestinationListTemplate(destinations);
-  const eventTypeListTemplate = createEventTypeListTemplate();
-  const offersSectionTemplate = createOffersSectionTemplate(renderedWithCheckboxOffers);
+  const eventTypeListTemplate = createEventTypeListTemplate(type, POINT_TYPES);
+  const destinationListTemplate = createDestinationListTemplate(destinationNames);
+  const offersSectionTemplate = createOffersSectionTemplate(offers, isOffersExist);
+  const destinationSectionTemplate = isDestinationExist ? createDestinationSectionTemplate(destination, isDescriptionExist, isPicturesExist) : '';
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -155,7 +112,10 @@ const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers,
           <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
           <div class="event__type-list">
-            ${eventTypeListTemplate}
+            <fieldset class="event__type-group">
+              <legend class="visually-hidden">Event type</legend>
+              ${eventTypeListTemplate}
+            </fieldset>
           </div>
         </div>
 
@@ -201,8 +161,9 @@ const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers,
           <input
             class="event__input  event__input--price"
             id="event-price-1"
-            type="text"
+            type="number"
             name="event-price"
+            min="0"
             value="${basePrice}">
         </div>
 
@@ -216,45 +177,36 @@ const createFormEditTemplate = (point, destinations, renderedWithCheckboxOffers,
 
         ${offersSectionTemplate}
 
-        <section class="event__section  event__section--destination">
-          <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-          <p class="event__destination-description">${destination.description}</p>
-
-          ${createPhotoContainerTemplate(destination.pictures, isModeCreate)}
-        </section>
+        ${destinationSectionTemplate}
       </section>
     </form>
   </li>`;
 };
 
-export default class FormCreateEditView extends AbstractView {
-  #point = null;
-  #destination = null;
-  #allOffersMap = null;
-  #isModeCreate = false;
+export default class FormCreateEditView extends SmartView {
+  #startDatePicker = null;
+  #endDatePicker = null;
 
-  constructor(point, destination, offers, isModeCreate) {
+  #destinations = null;
+  #allOffersMap = null;
+
+  constructor(point, destinations, offers) {
     super();
 
-    this.#point = point;
-    this.#destination = destination;
+    this.#destinations = destinations;
     this.#allOffersMap = offers;
-    this.#isModeCreate = isModeCreate;
+
+    this._data = FormCreateEditView.parsePointToData(point, destinations, offers);
+
+    this.#setInnerHandlers();
   }
 
   get template() {
-    return createFormEditTemplate (
-      this.#point,
-      this.#destination,
-      getRenderedWithCheckboxOffers(this.#allOffersMap[this.#point.type] || [], this.#point.offers),
-      this.#isModeCreate
-    );
+    return createFormEditTemplate(this._data);
   }
 
-  setRollupButtonClickHandler = (callback) => {
-    this._callback.rollupButtonClick = callback;
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupButtonClickHandler);
-  }
+
+  // EVENT SETTERS
 
   setFormSubmitHandler = (callback) => {
     this._callback.formSubmit = callback;
@@ -266,16 +218,235 @@ export default class FormCreateEditView extends AbstractView {
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#resetButtonClickHandler);
   }
 
+  setRollupButtonClickHandler = (callback) => {
+    this._callback.rollupButtonClick = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupButtonClickHandler);
+  }
+
+  #setInnerHandlers = () => {
+    const element = this.element;
+    const destinationInput = element.querySelector('.event__input--destination');
+
+    destinationInput.addEventListener('change', this.#destinationInputChangeHandler);
+    destinationInput.addEventListener('focus', this.#destinationInputFocusHandler);
+
+    destinationInput.addEventListener('keydown', this.#destinationInputKeydownHandler);
+
+    element.querySelector('.event__type-group').addEventListener('change', this.#typeInputChangeHandler);
+    element.querySelector('.event__input--price').addEventListener('input', this.#priceInputChangeHandler);
+  }
+
+
+  // DATAPICKERS SETTERS
+
+  #setStartDatePicker = () => {
+    this.#startDatePicker = flatpickr(
+      this.element.querySelector('#event-start-time-1'),
+      {
+        enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        maxDate: this._data.dateTo ? this._data.dateTo.toISOString() : '',
+        onChange: this.#startDateChangeHandler,
+      }
+    );
+  }
+
+  #setEndDatePicker = () => {
+    this.#endDatePicker = flatpickr(
+      this.element.querySelector('#event-end-time-1'),
+      {
+        enableTime: true,
+        dateFormat: 'd/m/y H:i',
+        minDate: this._data.dateFrom ? this._data.dateFrom.toISOString() : '',
+        onChange: this.#endDateChangeHandler,
+      }
+    );
+  }
+
+  setDatePickers = () => {
+    this.#setStartDatePicker();
+    this.#setEndDatePicker();
+  }
+
+  restoreHandlers = () => {
+    this.#setInnerHandlers();
+    this.setDatePickers();
+
+    this.setRollupButtonClickHandler(this._callback.rollupButtonClick);
+    this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setResetButtonClickHandler(this._callback.resetButtonClick);
+  }
+
+  reset = (point) => {
+    this.updateData(FormCreateEditView.parsePointToData(
+      point, this.#destinations, this.#allOffersMap
+    ), false);
+  }
+
+  removeDatePickers = () => {
+    if (this.#startDatePicker) {
+      this.#startDatePicker.destroy();
+      this.#startDatePicker = null;
+    }
+
+    if (this.#endDatePicker) {
+      this.#endDatePicker.destroy();
+      this.#endDatePicker = null;
+    }
+  }
+
+  removeElement = () => {
+    super.removeElement();
+    this.removeDatePickers();
+  }
+
+
+  // CALLBACK HANDLERS
+
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+
+    const offers = [];
+    const checkedOffers = this.element.querySelectorAll('.event__offer-checkbox:checked');
+
+    checkedOffers.forEach((offerElement) => {
+      offers.push(
+        {
+          id: +offerElement.id,
+          title: offerElement.name,
+          price: +offerElement.dataset.price,
+        }
+      );
+    });
+
+    const point = FormCreateEditView.parseDataToPoint(this._data);
+    point.offers = offers;
+
+    this._callback.formSubmit(point);
+  }
+
+  #destinationInputFocusHandler = (evt) => {
+    const target =  evt.target;
+
+    target.placeholder = target.value;
+    target.value = '';
+
+    target.addEventListener('blur', () => {
+      target.value = target.placeholder;
+    }, {once: true});
+  };
+
+  #destinationInputKeydownHandler = (evt) => {
+    evt.preventDefault();
+  };
+
   #rollupButtonClickHandler = () => {
     this._callback.rollupButtonClick();
   }
 
-  #formSubmitHandler = (evt) => {
-    evt.preventDefault();
-    this._callback.formSubmit();
-  }
-
   #resetButtonClickHandler = () => {
     this._callback.resetButtonClick();
+  }
+
+  #priceInputChangeHandler = (evt) => {
+    evt.preventDefault();
+    this.updateData({basePrice: +evt.target.value}, true);
+  }
+
+  #destinationInputChangeHandler = (evt) => {
+    evt.preventDefault();
+
+    const destinationName = evt.target.value;
+    const destination = this.#destinations.find(({name}) => name === destinationName);
+
+    if (!destination) {
+      return;
+    }
+
+    this.updateData({
+      destination,
+      isDescriptionExist: !!destination.description,
+      isPicturesExist: !!destination.pictures.length,
+      isDestinationExist: !!destination.description || !!destination.pictures.length,
+    }, false);
+  }
+
+  #typeInputChangeHandler = (evt) => {
+    evt.preventDefault();
+
+    const type = evt.target.value;
+    const typeOffers = this.#allOffersMap[type] ?? [];
+    const offers = FormCreateEditView.getRenderedWithCheckboxOffers([], typeOffers);
+
+    const isOffersExist = offers.length > 0;
+
+    this.updateData({type, offers, isOffersExist}, false);
+  }
+
+  #startDateChangeHandler = (newStartDate) => {
+    const newStartDateConverted = parseDate(newStartDate);
+    this.updateData({dateFrom: newStartDateConverted}, true);
+    this.#endDatePicker.destroy();
+    this.#endDatePicker = null;
+    this.#setEndDatePicker();
+  }
+
+  #endDateChangeHandler = (newEndDate) => {
+    const newEndDateConverted = parseDate(newEndDate);
+    this.updateData({dateTo: newEndDateConverted}, true);
+    this.#setStartDatePicker();
+  };
+
+
+  // STATIC METHODS
+
+  static getRenderedWithCheckboxOffers = (pointOffers, allOffers) => {
+    const renderedOffers = allOffers.reduce((offers, offer) => {
+      offers.push({
+        ...offer,
+        isChecked: pointOffers.some(({ id }) => id === offer.id),
+      });
+
+      return offers;
+    }, []);
+
+    return renderedOffers;
+  };
+
+  static parsePointToData = (point, destinations, allOffersMap) => {
+    const {
+      type,
+      offers,
+      destination: { description, pictures },
+    } = point;
+
+    const typeOffers = allOffersMap[type] ?? [];
+    const dataOffers = FormCreateEditView.getRenderedWithCheckboxOffers(offers, typeOffers);
+
+    const isDescriptionExist = description !== '';
+    const isPicturesExist = pictures.length > 0;
+    const isOffersExist = dataOffers.length > 0;
+
+    return {
+      ...point,
+      offers: dataOffers,
+      destinationNames: destinations.map(({ name }) => name),
+      isDestinationExist: isDescriptionExist || isPicturesExist,
+      isDescriptionExist,
+      isPicturesExist,
+      isOffersExist,
+    };
+  };
+
+  static parseDataToPoint = (data) => {
+    const point = {...data};
+
+    delete point.isDestinationExist;
+    delete point.isDescriptionExist;
+    delete point.isPicturesExist;
+    delete point.isOffersExist;
+    delete point.destinationNames;
+
+    return point;
   }
 }
