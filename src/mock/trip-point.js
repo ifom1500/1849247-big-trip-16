@@ -67,7 +67,7 @@ export const destinations = [
 
 const getRandomArrayItem = (items) => items[getRandomInteger(0, items.length - 1)];
 
-const generatePoorId = () => +String(Math.random()).slice(-5);
+export const generatePoorId = () => +String(Math.random()).slice(-5);
 
 const generateOffer = (
   {

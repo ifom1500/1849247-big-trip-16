@@ -4,6 +4,8 @@ import FormCreateEditView from '../view/form-create-edit-view.js';
 import { RenderPosition, render, replace, remove } from '../utils/render.js';
 import { isEscapeEvent } from '../utils/common.js';
 
+import {UserAction, UpdateType} from '../utils/const.js';
+
 const Mode = {
   DEFAULT: 'DEFAULT',
   EDITING: 'EDITING',
@@ -30,18 +32,14 @@ export default class PointPresenter {
   }
 
   init = (point, destinations) => {
-    // записываем параметры в свойства презентера
     this.#point = point;
 
-    // записываем исходное состояние копмонентов
     const prevPointComponent = this.#pointComponent;
     const prevPointEditComponent = this.#pointEditComponent;
 
-    // создаем экземпляры вьюшек
     this.#pointComponent = new TripPointView(this.#point);
     this.#pointEditComponent = new FormCreateEditView(this.#point, destinations, this.#allOffersMap, { isNew: false });
 
-    // вешаем обработчики
     this.#pointComponent.setRollupButtonClickHandler(this.#handleEditClick);
     this.#pointComponent.setFavoriteClickHandler(this.#handleFavoriteClick);
     this.#pointEditComponent.setRollupButtonClickHandler(this.#handleCloseClick);
@@ -107,19 +105,44 @@ export default class PointPresenter {
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
-  #handleFormSubmit = (point) => {
-    this.#changeData(point);
+  // принимает теперь не point а update
+  #handleFormSubmit = (update) => {
+    // this.#changeData(point); // Для модели
+
+    // Проверяем, поменялись ли в задаче данные, которые попадают под фильтрацию,
+    // а значит требуют перерисовки списка - если таких нет, это PATCH-обновление
+
+
+    this.#changeData(
+      UserAction.UPDATE_POINT,
+      // isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      UpdateType.MINOR,
+      update,
+    );
     this.#replaceFormToPoint();
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
   #handleResetButtonClick = () => {
+
+    // this.#changeData(
+    //   UserAction.DELETE_TASK,
+    //   UpdateType.MINOR,
+    //   task,
+    // );
+
     remove(this.#pointEditComponent);
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
   #handleFavoriteClick = () => {
-    this.#changeData({...this.#point, isFavorite: !this.#point.isFavorite});
+    // this.#changeData({...this.#point, isFavorite: !this.#point.isFavorite});
+    // для модели
+    this.#changeData(
+      UserAction.UPDATE_POINT,
+      UpdateType.MINOR,
+      {...this.#point, isFavorite: !this.#point.isFavorite},
+    );
   }
 
   #escKeyDownHandler = (evt) => {

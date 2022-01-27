@@ -1,3 +1,4 @@
+// import he from 'he';
 import SmartView from './smart-view.js';
 import { capitalize } from '../utils/common.js';
 import { parseDate } from '../utils/date.js';
@@ -344,8 +345,10 @@ export default class FormCreateEditView extends SmartView {
     this._callback.rollupButtonClick();
   }
 
-  #resetButtonClickHandler = () => {
-    this._callback.resetButtonClick();
+  #resetButtonClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.resetButtonClick(/* TaskEditView.parseDataToTask(this._data) **/);
+    // так в демо проекте 7.1.6
   }
 
   #priceInputChangeHandler = (evt) => {
@@ -413,15 +416,17 @@ export default class FormCreateEditView extends SmartView {
     return renderedOffers;
   };
 
-  static parsePointToData = (point, destinations, allOffersMap) => {
+  static parsePointToData = (point, destinationsModel, allOffersMap) => {
     const {
       type,
       offers,
       destination: { description, pictures },
     } = point;
 
-    const typeOffers = allOffersMap[type] ?? [];
-    const dataOffers = FormCreateEditView.getRenderedWithCheckboxOffers(offers, typeOffers);
+    // destinationsModel.get ...
+
+    // const typeOffers = allOffersMap[type] ?? [];
+    // const dataOffers = FormCreateEditView.getRenderedWithCheckboxOffers(offers, typeOffers);
 
     const isDescriptionExist = description !== '';
     const isPicturesExist = pictures.length > 0;
