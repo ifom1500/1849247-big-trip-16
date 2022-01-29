@@ -114,6 +114,8 @@ const allOffers = (
   ]
 );
 
+export { allOffers };
+
 // Функция адаптер: объект-словарь
 export const allOffersMap = allOffers.reduce((map, item) => {
   map[item.type] = item.offers;

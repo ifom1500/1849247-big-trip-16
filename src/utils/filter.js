@@ -1,7 +1,19 @@
-import {FilterType} from '../utils/const.js';
+import { FilterType } from '../utils/const.js';
 
-export const filter = {
-  [FilterType.EVERYTHING]: (points) => points,
-  [FilterType.FUTURE]: (points) => points.filter((point) => (point.timeEnd - Date.now()) >= 0),
-  [FilterType.PAST]: (points) => points.filter((point) => (point.timeStart - Date.now()) < 0),
+const filterPointsByFuture = (points, dateNow) => points.filter(({ dateFrom }) => dateFrom > dateNow);
+const filterPointsBy = (points, dateNow) => points.filter(({ dateTo }) => dateTo < dateNow);
+
+export const filterTypeToPoint = {
+  [FilterType.EVERYTHING]: (points) => points.slice(),
+  [FilterType.FUTURE]: (points) => filterPointsByFuture(points, Date.now()),
+  [FilterType.PAST]: (points) => filterPointsBy(points, Date.now()),
 };
+
+
+// TODO: Можно скрыть работу со словарем за интерфейсом функции:
+//  filter ->  filterPoints / filterPointByType
+//  = (points, filterType = FilterType.EVERYTHING) => filter[filterType](points);
+
+// const UPDA_DATE = 2;
+// Date.now = () => new Date(...)
+// filter[FilterType.PAST](points) =>

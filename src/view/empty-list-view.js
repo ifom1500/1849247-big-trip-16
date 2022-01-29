@@ -1,31 +1,31 @@
 import AbstractView from './abstract-view.js';
 import { FilterType } from '../utils/const.js';
 
-const EmptyListMessage = {
+const filterTypeToMessage = {
   [FilterType.EVERYTHING]: 'Click New Event to create your first point',
   [FilterType.PAST]: 'There are no past events now',
   [FilterType.FUTURE]: 'There are no future events now',
 };
 
-const createEmptyListTemplate = (filterType) => {
-  const EmptyListTextValue = EmptyListMessage[filterType];
-
-  return `<section class="trip-events">
+const createEmptyListTemplate = (filterType) => (
+  // отрисовываю непосредственно в <div class="page-body__container">
+  // поэтому в качестве шаблона беру не только <p>, но и обертку <section> и <h2>
+  `<section class="trip-events">
     <h2 class="visually-hidden">Trip events</h2>
-
-    <p class="trip-events__msg">
-      ${EmptyListTextValue}
-    </p>`;
-};
+    <p class="trip-events__msg">${filterTypeToMessage[filterType] ?? ''}</p>
+  </section>`
+);
 
 export default class EmptyListView extends AbstractView {
-  constructor(data) {
+  #filterType = '';
+
+  constructor(filterType) {
     super();
 
-    this._data = data;
+    this.#filterType = filterType;
   }
 
   get template() {
-    return createEmptyListTemplate(this._data);
+    return createEmptyListTemplate(this.#filterType);
   }
 }

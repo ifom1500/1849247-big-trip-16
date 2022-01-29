@@ -1,14 +1,12 @@
-import AbstractObservable from '../utils/abstract-observable.js';
-
-export default class DestinationsModel extends AbstractObservable {
+export default class DestinationsModel {
   #destinations = new Map();
 
-  setDestinations(destinations) {
+  set = (destinations) => {
     destinations.forEach((destination) =>
       this.#destinations.set(destination.name, destination));
   }
 
-  getDestination(name) {
-    return this.#destinations.get(name);
-  }
+  get = () => [...this.#destinations.values()]; // [{description}, {name}, {pics}, ...]
+
+  getByName = (name) => this.#destinations.get(name);
 }

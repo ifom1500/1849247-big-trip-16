@@ -7,28 +7,33 @@ import DestinationsModel from './model/destinations-model.js';
 import OffersModel from './model/offers-model.js';
 
 import { destinations, tripPoints } from './mock/trip-point.js';
-import { allOffersMap } from './mock/trip-point.js';
+import { allOffers } from './mock/trip-point.js';
 
+
+// МОДЕЛИ -----
 
 const destinationsModel = new DestinationsModel();
-destinationsModel.setDestinations(destinations);
+destinationsModel.set(destinations);
 
 const offersModel = new OffersModel();
-offersModel.setOffers(allOffersMap);
+offersModel.set(allOffers);
 
 const filterModel = new FilterModel();
 
 const pointsModel = new PointsModel();
 pointsModel.points = tripPoints;
 
-
-// Presenter
 const headerElement = document.querySelector('.page-header');
 const mainElement = document.querySelector('.page-main');
 
-const filterPresenter = new FilterPresenter(headerElement, filterModel, pointsModel);
+
+// ПРЕЗЕНТЕРЫ -----
+
+const filterPresenter = new FilterPresenter(headerElement.querySelector('.trip-controls'), filterModel);
+filterPresenter.init();
+
 const generalPresenter = new GeneralPresenter(
-  headerElement,
+  headerElement, // TODO: желательно избавится
   mainElement,
   pointsModel,
   filterModel,
@@ -36,11 +41,11 @@ const generalPresenter = new GeneralPresenter(
   offersModel
 );
 
-generalPresenter.init(/*tripPoints, destinations, allOffersMap**/);
-filterPresenter.init(); // возможно надо поставить ДО generalPresenter
+generalPresenter.init();
 
-
-// new point button
+// TODO: new point button
+// создать компонент 'NewPointButton'
+//  + метод добавления обработчика: NewPointButton.setCickHandler
 document.querySelector('.trip-main__event-add-btn').addEventListener('click', (evt) => {
   evt.preventDefault();
   generalPresenter.createPoint();

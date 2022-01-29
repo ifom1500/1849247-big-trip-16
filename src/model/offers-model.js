@@ -1,13 +1,11 @@
-import AbstractObservable from '../utils/abstract-observable.js';
+export default class OffersModel {
+  #offers = new Map();
 
-export default class OffersModel extends AbstractObservable {
-  #offers = null
-
-  setOffers(allOffersMap) {
-    this.#offers = allOffersMap;
+  set = (allOffers) => {
+    allOffers.forEach(({ type, offers }) => {
+      this.#offers.set(type, offers);
+    });
   }
 
-  getOffers(type) {
-    return this.#offers.get(type);
-  }
+  getByType = () => this.#offers; // {'bus' => Array( id, title, price ), ...}
 }

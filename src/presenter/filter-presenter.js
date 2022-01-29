@@ -3,23 +3,18 @@ import {render, RenderPosition, replace, remove} from '../utils/render.js';
 import {FilterType, UpdateType} from '../utils/const.js';
 
 export default class FilterPresenter {
-  #headerElement = null;
+  #containerElement = null;
   #filterModel = null;
-  #pointsModel = null;
   #filterComponent = null;
-  #tripControlsElement = null;
 
-  constructor(headerElement, filterModel, pointsModel) {
-    this.#headerElement = headerElement;
+  constructor(containerElement, filterModel) {
+    this.#containerElement = containerElement;
     this.#filterModel = filterModel;
-    this.#pointsModel = pointsModel;
 
-    this.#tripControlsElement = this.#headerElement.querySelector('.trip-controls');
-
-    this.#pointsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
+  // TODO: доработать -> static method или const TRIP_FILTERS (const.js)
   #getFilters = () => (
     [
       {
@@ -38,14 +33,14 @@ export default class FilterPresenter {
   )
 
   init = () => {
-    const filters = this.#getFilters;
+    const filters = this.#getFilters();
     const prevFilterComponent = this.#filterComponent;
 
-    this.#filterComponent = new FiltersView(filters, this.#filterModel.filter);
+    this.#filterComponent = new FiltersView(filters, this.#filterModel.type);
     this.#filterComponent.setFilterTypeChangeHandler(this.#handleFilterTypeChange);
 
     if (prevFilterComponent === null) {
-      render(this.#tripControlsElement, this.#filterComponent, RenderPosition.BEFORE_END);
+      render(this.#containerElement, this.#filterComponent, RenderPosition.BEFORE_END);
       return;
     }
 
@@ -58,10 +53,10 @@ export default class FilterPresenter {
   }
 
   #handleFilterTypeChange = (filterType) => {
-    if (this.#filterModel.filter === filterType) {
+    if (this.#filterModel.type === filterType) {
       return;
     }
 
-    this.#filterModel.setFilter(UpdateType.MAJOR, filterType);
+    this.#filterModel.set(UpdateType.MAJOR, filterType);
   }
 }

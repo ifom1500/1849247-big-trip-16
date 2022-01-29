@@ -192,6 +192,9 @@ export default class FormCreateEditView extends SmartView {
   #allOffersMap = null;
 
   constructor(point, destinations, offers) {
+    // [{description}, {name}, {pics}, ...] = destinationsModel.#destinations
+    // {'bus' => Array( id, title, price ), ...}
+
     super();
 
     this.#destinations = destinations;
@@ -206,9 +209,7 @@ export default class FormCreateEditView extends SmartView {
     return createFormEditTemplate(this._data);
   }
 
-
   // EVENT SETTERS
-
   setFormSubmitHandler = (callback) => {
     this._callback.formSubmit = callback;
     this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
@@ -378,7 +379,7 @@ export default class FormCreateEditView extends SmartView {
     evt.preventDefault();
 
     const type = evt.target.value;
-    const typeOffers = this.#allOffersMap[type] ?? [];
+    const typeOffers = this.#allOffersMap.get(type) ?? [];
     const offers = FormCreateEditView.getRenderedWithCheckboxOffers([], typeOffers);
 
     const isOffersExist = offers.length > 0;
@@ -386,12 +387,23 @@ export default class FormCreateEditView extends SmartView {
     this.updateData({type, offers, isOffersExist}, false);
   }
 
-  #startDateChangeHandler = (newStartDate) => {
+  #startDateChangeHandler = ([newStartDate]) => {
+    // newStartDate = [Wed Jul 03 2019 01:55:00 GMT+0300 (Москва, стандартное время)]
+
+    /**
     const newStartDateConverted = parseDate(newStartDate);
     this.updateData({dateFrom: newStartDateConverted}, true);
     this.#endDatePicker.destroy();
     this.#endDatePicker = null;
     this.#setEndDatePicker();
+    */
+
+    // См:
+    // https://flatpickr.js.org/options/#:~:text=pick%20to%20(inclusive).-,minDate,-String/Date
+    // https://flatpickr.js.org/instance-methods-properties-elements/#:~:text=in%20most%20cases.-,set(option%2C%20value),-%23
+
+    // TODO: желательно так же сделать в другом: #endDateChangeHandler
+    this.#endDatePicker.set('minDate', newStartDate);
   }
 
   #endDateChangeHandler = (newEndDate) => {
@@ -416,17 +428,15 @@ export default class FormCreateEditView extends SmartView {
     return renderedOffers;
   };
 
-  static parsePointToData = (point, destinationsModel, allOffersMap) => {
+  static parsePointToData = (point, destinations, allOffersMap) => {
     const {
       type,
       offers,
       destination: { description, pictures },
     } = point;
 
-    // destinationsModel.get ...
-
-    // const typeOffers = allOffersMap[type] ?? [];
-    // const dataOffers = FormCreateEditView.getRenderedWithCheckboxOffers(offers, typeOffers);
+    const typeOffers = allOffersMap.get(type) ?? [];
+    const dataOffers = FormCreateEditView.getRenderedWithCheckboxOffers(offers, typeOffers);
 
     const isDescriptionExist = description !== '';
     const isPicturesExist = pictures.length > 0;

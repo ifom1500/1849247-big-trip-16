@@ -24,21 +24,24 @@ export default class PointPresenter {
   #changeMode = null;
   #changeData = null;
 
-  constructor(container, changeData, changeMode, allOffersMap) {
+  constructor(container, changeData, changeMode) {
     this.#container = container;
     this.#changeData = changeData;
     this.#changeMode = changeMode;
-    this.#allOffersMap = allOffersMap;
   }
 
-  init = (point, destinations) => {
+  init = (point, destinations, offers) => {
+    // {basePrice: 84, dateFrom: M, dateTo: M, destination: {...}, ...}
+    // [{description}, {name}, {pics}, ...]
+    // {'bus' => Array( id, title, price ), ...}
+
     this.#point = point;
 
     const prevPointComponent = this.#pointComponent;
     const prevPointEditComponent = this.#pointEditComponent;
 
     this.#pointComponent = new TripPointView(this.#point);
-    this.#pointEditComponent = new FormCreateEditView(this.#point, destinations, this.#allOffersMap, { isNew: false });
+    this.#pointEditComponent = new FormCreateEditView(this.#point, destinations, offers, { isNew: false });
 
     this.#pointComponent.setRollupButtonClickHandler(this.#handleEditClick);
     this.#pointComponent.setFavoriteClickHandler(this.#handleFavoriteClick);
@@ -108,10 +111,8 @@ export default class PointPresenter {
   // принимает теперь не point а update
   #handleFormSubmit = (update) => {
     // this.#changeData(point); // Для модели
-
     // Проверяем, поменялись ли в задаче данные, которые попадают под фильтрацию,
     // а значит требуют перерисовки списка - если таких нет, это PATCH-обновление
-
 
     this.#changeData(
       UserAction.UPDATE_POINT,

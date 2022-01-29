@@ -1,7 +1,6 @@
 import MenuView from '../view/menu-view.js';
 import NewEventButtonView from '../view/new-event-button-view.js';
 import FiltersContainerView from '../view/filters-container-view.js';
-import FiltersView from '../view/filters-view.js';
 import TripEventsView from '../view/trip-events-view.js';
 import EventsListView from '../view/events-list-view.js';
 import SortingView from '../view/sorting-view.js';
@@ -14,7 +13,7 @@ import { RenderPosition, render, remove } from '../utils/render.js';
 import { SortType } from '../utils/common.js';
 import { comparePointByDay, comparePointByDuration, comparePointByPrice } from '../utils/date.js';
 import { UpdateType, UserAction, FilterType } from '../utils/const.js';
-import { filter } from '../utils/filter.js';
+import { filterTypeToPoint } from '../utils/filter.js';
 
 export default class GeneralPresenter {
   #headerElement = null;
@@ -29,9 +28,6 @@ export default class GeneralPresenter {
   #offersModel = null;
   #filterModel = null;
 
-  // #destinations = []; // тоже потом удалю
-  // #allOffersMap = []; // тоже потом удалю
-
   #menuComponent = new MenuView();
   #newEventButtonComponent = new NewEventButtonView();
   #filtersContainerComponent = new FiltersContainerView();
@@ -45,7 +41,6 @@ export default class GeneralPresenter {
   #pointNewPresenter = null;
 
   #currentSortType = SortType.DAY;
-  #filterType = FilterType.EVERYTHING;
 
   // КОНСТРУКТОР --------
 
@@ -77,10 +72,9 @@ export default class GeneralPresenter {
   }
 
   get points() {
-
-    this.#filterType = this.#filterModel.filter;
+    const filterType = this.#filterModel.type;
     const points = this.#pointsModel.points;
-    const filteredPoints = filter[this.#filterType](points);
+    const filteredPoints = filterTypeToPoint[filterType](points);
 
     switch (this.#currentSortType) {
       case SortType.DAY:
@@ -94,7 +88,6 @@ export default class GeneralPresenter {
     return filteredPoints;
   }
 
-  // удалил все аргументы (tripPoints, destinations, allOffersMap)
   init = () => {
     this.#tripMainElement = this.#headerElement.querySelector('.trip-main');
     this.#tripControlsElement = this.#headerElement.querySelector('.trip-controls');
@@ -110,16 +103,16 @@ export default class GeneralPresenter {
     update,
   ) => {
 
-    console.log(
-      'handleViewAction',
-      '\n actionType ->', actionType, // действие пользователя -> какой метод модели вызвать
-      '\n updateType ->', updateType, // тип изменений -> что после нужно обновить
-      '\n update ->', update // update - обновленные данные
-    );
+    // console.log(
+    //   'handleViewAction',
+    //   '\n actionType ->', actionType, // действие пользователя -> какой метод модели вызвать
+    //   '\n updateType ->', updateType, // тип изменений -> что после нужно обновить
+    //   '\n update ->', update // update - обновленные данные
+    // );
 
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this.#pointsModel.updatePoint(updateType, update);
+        this.#pointsModel.update(updateType, update);
         break;
       case UserAction.ADD_POINT:
         this.#pointsModel.addPoint(updateType, update);
@@ -132,11 +125,11 @@ export default class GeneralPresenter {
 
   #handleModelEvent = (updateType, data) => {
 
-    console.log(
-      'handleModelEvent',
-      '\n updateType ->', updateType,
-      '\n data ->', data
-    );
+    // console.log(
+    //   'handleModelEvent',
+    //   '\n updateType ->', updateType,
+    //   '\n data ->', data
+    // );
 
     switch (updateType) {
       case UpdateType.PATCH: // обновить часть списка (смена описания)
@@ -144,12 +137,11 @@ export default class GeneralPresenter {
         break;
       case UpdateType.MINOR: // обновить список (задача в архив)
         this.#clearBoard();
-        this.#renderBoard();
-        // ...
+        this.#renderList();
         break;
       case UpdateType.MAJOR: // обновить всю доску (переключение фильтра)
         this.#clearBoard();
-        this.#renderBoard(); // renderSite
+        this.#renderList();
         break;
     }
   }
@@ -170,12 +162,8 @@ export default class GeneralPresenter {
     render(this.#tripControlsElement, this.#filtersContainerComponent, RenderPosition.BEFORE_END);
   }
 
-  // #renderFilters = () => {
-  //   render(this.#filtersContainerComponent, this.#filtersComponent, RenderPosition.BEFORE_END);
-  // }
-
   #renderEmptyList = () => {
-    this. #emptyListComponent = new EmptyListView();
+    this.#emptyListComponent = new EmptyListView(this.#filterModel.type);
     render(this.#mainContainerElement, this.#emptyListComponent, RenderPosition.AFTER_BEGIN);
   }
 
@@ -201,18 +189,22 @@ export default class GeneralPresenter {
   #renderPoint = (point) => {
     const pointPresenter = new PointPresenter(
       this.#eventsListComponent,
-      this.#handleViewAction, // добавлено вместо того что выше
+      this.#handleViewAction,
       this.#handleModeChange
     );
-    pointPresenter.init(point, this.#destinationsModel);
+
+    pointPresenter.init(
+      point, // {basePrice: 84, dateFrom: M, dateTo: M, destination: {...}, ...}
+      this.#destinationsModel.get(), // [{description}, {name}, {pics}, ...]
+      this.#offersModel.getByType(), // {'bus' => Array( id, title, price ), ...}
+    );
 
     this.#pointPresenter.set(point.id, pointPresenter);
   }
 
   createPoint = () => {
     this.#currentSortType = SortType.DAY;
-    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-    // UpdateType.MAJOR
+    this.#filterModel.set(UpdateType.MAJOR, FilterType.EVERYTHING);
     this.#pointNewPresenter.init();
   }
 
@@ -238,7 +230,7 @@ export default class GeneralPresenter {
 
     remove(this.#sortingComponent);
 
-    if (this.#emptyListComponent) {
+    if (this.#emptyListComponent !== null) {
       remove(this.#emptyListComponent);
     }
 
@@ -248,13 +240,13 @@ export default class GeneralPresenter {
   }
 
   #renderBoard = () => {
-    const points = this.points;
-    const pointCount = points.length;
-
     this.#renderMenu();
     this.#renderNewEventButton();
+    this.#renderList();
+  }
 
-    if (pointCount === 0) {
+  #renderList = () => {
+    if (this.points.length === 0) {
       this.#renderEmptyList();
     } else {
       this.#renderTripEvents();

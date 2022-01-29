@@ -12,7 +12,6 @@ const createFilterTemplate = (filter, currentFilterType) => {
 };
 
 const createFiltersTemplate = (filters, currentFilterType) => {
-  console.log('filters', filters);
   const filtersTemplate = filters.map((filter) =>
     createFilterTemplate(filter, currentFilterType)).join('');
 
@@ -29,13 +28,11 @@ export default class FiltersView extends AbstractView {
   #filterItems = [];
   currentFilterType = null;
 
-  // нужно передать сюда аргументы
   constructor(filterItems, currentFilterType) {
     super();
 
     this.#filterItems = filterItems;
     this.currentFilterType = currentFilterType;
-
   }
 
   get template() {

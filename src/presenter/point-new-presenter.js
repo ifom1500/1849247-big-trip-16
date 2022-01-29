@@ -28,10 +28,12 @@ export default class PointNewPresenter {
       return;
     }
 
-    const destinationInfo = this.#destinationsModel.getDestination(DESTINATIONS[0]);
-    const currentOffersOfType = this.#offersModel.getOffers(EVENT_TYPES[0]);
+    //TODO: доработать
 
-    this.#pointEditComponent = new FormCreateEditView(blankPoint, destinationInfo, currentOffersOfType);
+    // const destinationInfo = this.#destinationsModel.getByName(DESTINATIONS[0]);
+    // const currentOffersOfType = this.#offersModel.getByType(EVENT_TYPES[0]);
+
+    this.#pointEditComponent = new FormCreateEditView(blankPoint, /* destinationInfo, currentOffersOfType **/);
 
     this.#pointEditComponent.setFormSubmitHandler(this.#handleFormSubmit);
     this.#pointEditComponent.setDeleteClickHandler(this.#handleDeleteClick);
@@ -55,10 +57,10 @@ export default class PointNewPresenter {
   }
 
   #handleChangeDestination = (newDestination) =>
-    this.#destinationsModel.getDestination(newDestination);
+    this.#destinationsModel.getByName(newDestination);
 
   #handleChangeType = (newType) =>
-    this.#offersModel.getOffers(newType);
+    this.#offersModel.getByType(newType);
 
   #handleFormSubmit = (point) => {
     this.#changeData(
