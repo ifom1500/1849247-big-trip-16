@@ -22,19 +22,20 @@ const capitalize = (text) => `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
 
 const isEscapeEvent = (evt) => ESCAPE_KEYS.includes(evt.key);
 
-const updateItem = (items, update) => {
-  const index = items.findIndex((item) => item.id === update.id);
+// больше не нужна, весь функционал в модели
+// const updateItem = (items, update) => {
+//   const index = items.findIndex((item) => item.id === update.id);
 
-  if (index === -1) {
-    return items;
-  }
+//   if (index === -1) {
+//     return items;
+//   }
 
-  return [
-    ...items.slice(0, index),
-    update,
-    ...items.slice(index + 1),
-  ];
-};
+//   return [
+//     ...items.slice(0, index),
+//     update,
+//     ...items.slice(index + 1),
+//   ];
+// };
 
 const getBlankPoint = (parseDateCallback) => (
   {
@@ -49,4 +50,4 @@ const getBlankPoint = (parseDateCallback) => (
   }
 );
 
-export { capitalize, isEscapeEvent, updateItem, SortType, PointType, getBlankPoint };
+export { capitalize, isEscapeEvent, /*updateItem,**/ SortType, PointType, getBlankPoint };

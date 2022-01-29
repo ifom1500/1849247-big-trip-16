@@ -8,7 +8,17 @@ export const RenderPosition = {
   AFTER_END: 'afterend',
 };
 
-export const render = (container, element, place) => {
+// TODO: -> parent[place](child);
+/**
+export const RenderPosition = {
+  BEFORE_BEGIN: 'before',
+  AFTER_BEGIN: 'after',
+  BEFORE_END: 'before',
+  AFTER_END: 'after',
+};
+**/
+
+export const render = (container, element, place = RenderPosition.BEFORE_BEGIN) => {
   const parent = container instanceof AbstractView ? container.element : container;
   const child = element instanceof AbstractView ? element.element : element;
 
@@ -26,6 +36,9 @@ export const render = (container, element, place) => {
       parent.after(child);
       break;
   }
+  /*
+  parent[place](child);
+  **/
 };
 
 export const createElement = (template) => {
