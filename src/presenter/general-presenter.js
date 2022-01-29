@@ -5,6 +5,7 @@ import TripEventsView from '../view/trip-events-view.js';
 import EventsListView from '../view/events-list-view.js';
 import SortingView from '../view/sorting-view.js';
 import EmptyListView from '../view/empty-list-view.js';
+import LoadingView from '../view/loading-view.js';
 
 import PointPresenter from '../presenter/point-presenter.js';
 import PointNewPresenter from '../presenter/point-new-presenter.js';
@@ -34,6 +35,7 @@ export default class GeneralPresenter {
 
   #tripEventsComponent = new TripEventsView(); // <section> - сортировка + список точек
   #eventsListComponent = new EventsListView(); // <ul> - список точек
+  #loadingComponent = new LoadingView();
   #emptyListComponent = null;
   #sortingComponent = null;
 
@@ -41,6 +43,7 @@ export default class GeneralPresenter {
   #pointNewPresenter = null;
 
   #currentSortType = SortType.DAY;
+  #isLoading = true;
 
   // КОНСТРУКТОР --------
 
@@ -143,6 +146,11 @@ export default class GeneralPresenter {
         this.#clearBoard();
         this.#renderList();
         break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderBoard();
+        break;
     }
   }
 
@@ -202,6 +210,10 @@ export default class GeneralPresenter {
     this.#pointPresenter.set(point.id, pointPresenter);
   }
 
+  #renderLoading = () => {
+    render(this.#mainContainerElement, this.#loadingComponent, RenderPosition.AFTER_BEGIN);
+  }
+
   createPoint = () => {
     this.#currentSortType = SortType.DAY;
     this.#filterModel.set(UpdateType.MAJOR, FilterType.EVERYTHING);
@@ -228,6 +240,8 @@ export default class GeneralPresenter {
     this.#pointPresenter.forEach((presenter) => presenter.destroy());
     this.#pointPresenter.clear();
 
+    remove(this.#loadingComponent);
+
     remove(this.#sortingComponent);
 
     if (this.#emptyListComponent !== null) {
@@ -240,6 +254,12 @@ export default class GeneralPresenter {
   }
 
   #renderBoard = () => {
+    if (this._isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
+
     this.#renderMenu();
     this.#renderNewEventButton();
     this.#renderList();

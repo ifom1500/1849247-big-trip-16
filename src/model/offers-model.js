@@ -1,11 +1,24 @@
+
 export default class OffersModel {
   #offers = new Map();
+  #apiService = null;
 
-  set = (allOffers) => {
-    allOffers.forEach(({ type, offers }) => {
-      this.#offers.set(type, offers);
-    });
+  constructor(apiService) {
+    this.#apiService = apiService;
   }
 
-  getByType = () => this.#offers; // {'bus' => Array( id, title, price ), ...}
+  getByType = () => this.#offers;
+  // {'bus' => Array( id, title, price ), ...}
+
+  init = async () => {
+    try {
+      const allOffers = await this.#apiService.offers;
+      // [ { type, offers: [] }, {} ... ]
+      allOffers.forEach(({ type, offers }) => {
+        this.#offers.set(type, offers);
+      });
+    } catch(err) {
+      this.#offers = [];
+    }
+  }
 }
