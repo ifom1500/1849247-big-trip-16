@@ -19,40 +19,41 @@ const apiService = new ApiService(END_POINT, AUTHORIZATION);
 // МОДЕЛИ -----
 
 const destinationsModel = new DestinationsModel(apiService);
-destinationsModel.init();
-
 const offersModel = new OffersModel(apiService);
-offersModel.init();
-
 const filterModel = new FilterModel();
-
 const pointsModel = new PointsModel(apiService);
-pointsModel.init();
 
+Promise.all([
+  pointsModel.init(),
+  destinationsModel.init(),
+  offersModel.init(),
+])
+  .finally(() => {
 
-// ПРЕЗЕНТЕРЫ -----
+    // ПРЕЗЕНТЕРЫ -----
 
-const headerElement = document.querySelector('.page-header');
-const mainElement = document.querySelector('.page-main');
+    const headerElement = document.querySelector('.page-header');
+    const mainElement = document.querySelector('.page-main');
 
-const filterPresenter = new FilterPresenter(headerElement.querySelector('.trip-controls'), filterModel);
-filterPresenter.init();
+    const filterPresenter = new FilterPresenter(headerElement.querySelector('.trip-controls'), filterModel);
+    filterPresenter.init();
 
-const generalPresenter = new GeneralPresenter(
-  headerElement, // TODO: желательно избавится
-  mainElement,
-  pointsModel,
-  filterModel,
-  destinationsModel,
-  offersModel
-);
+    const generalPresenter = new GeneralPresenter(
+      headerElement, // TODO: желательно избавится
+      mainElement,
+      pointsModel,
+      filterModel,
+      destinationsModel,
+      offersModel
+    );
 
-generalPresenter.init();
+    generalPresenter.init();
 
-// TODO: new point button
-// создать компонент 'NewPointButton'
-//  + метод добавления обработчика: NewPointButton.setCickHandler
-document.querySelector('.trip-main__event-add-btn').addEventListener('click', (evt) => {
-  evt.preventDefault();
-  generalPresenter.createPoint();
-});
+    // TODO: new point button
+    // создать компонент 'NewPointButton'
+    //  + метод добавления обработчика: NewPointButton.setCickHandler
+    document.querySelector('.trip-main__event-add-btn').addEventListener('click', (evt) => {
+      evt.preventDefault();
+      generalPresenter.createPoint();
+    });
+  });

@@ -4,7 +4,7 @@ import FormCreateEditView from '../view/form-create-edit-view.js';
 import { RenderPosition, render, replace, remove } from '../utils/render.js';
 import { isEscapeEvent } from '../utils/common.js';
 
-import {UserAction, UpdateType} from '../utils/const.js';
+import {UserAction, UpdateType, State} from '../utils/const.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -68,6 +68,36 @@ export default class PointPresenter {
     remove(prevPointEditComponent);
   }
 
+  setViewState = (state) => {
+    if (this.#mode === Mode.DEFAULT) {
+      return;
+    }
+
+    const resetFormState = () => this.#pointEditComponent.updateData({
+      isDisabled: false,
+      isSaving: false,
+      isDeleting: false,
+    });
+
+    switch (state) {
+      case State.SAVING:
+        this.#pointEditComponent.updateData({
+          isDisabled: true,
+          isSaving: true,
+        });
+        break;
+      case State.DELETING:
+        this.#pointEditComponent.updateData({
+          isDisabled: true,
+          isDeleting: true,
+        });
+        break;
+      case State.ABORTING:
+        this.#pointComponent.shake(resetFormState);
+        this.#pointEditComponent.shake(resetFormState);
+        break;
+    }
+  }
 
   destroy = () => {
     remove(this.#pointComponent);

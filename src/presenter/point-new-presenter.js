@@ -1,5 +1,4 @@
 import FormCreateEditView from '../view/form-create-edit-view.js';
-import {generatePoorId} from '../mock/trip-point.js';
 import {remove, render, RenderPosition} from '../utils/render.js';
 import {UserAction, UpdateType} from '../utils/const.js';
 
@@ -28,17 +27,18 @@ export default class PointNewPresenter {
       return;
     }
 
-    //TODO: доработать
-
-    // const destinationInfo = this.#destinationsModel.getByName(DESTINATIONS[0]);
-    // const currentOffersOfType = this.#offersModel.getByType(EVENT_TYPES[0]);
-
-    this.#pointEditComponent = new FormCreateEditView(blankPoint, /* destinationInfo, currentOffersOfType **/);
+    this.#pointEditComponent = new FormCreateEditView(
+      blankPoint,
+      this.#destinationsModel.get(),
+      this.#offersModel.getByType(),
+      { isNew: true }
+    );
 
     this.#pointEditComponent.setFormSubmitHandler(this.#handleFormSubmit);
     this.#pointEditComponent.setDeleteClickHandler(this.#handleDeleteClick);
-    this._editFormComponent.setChangeDestinationHandler(this.#handleChangeDestination);
-    this._editFormComponent.setChangeTypeHandler(this.#handleChangeType);
+    this.#pointEditComponent.setChangeDestinationHandler(this.#handleChangeDestination);
+    this.#pointEditComponent.setChangeTypeHandler(this.#handleChangeType);
+    this.#pointEditComponent.setDatePickers();
 
     render(this.#pointListContainer, this.#pointEditComponent, RenderPosition.AFTER_BEGIN);
 
@@ -66,7 +66,7 @@ export default class PointNewPresenter {
     this.#changeData(
       UserAction.ADD_POINT,
       UpdateType.MINOR,
-      {id: generatePoorId(), ...point},
+      point,
     );
     this.destroy();
   }

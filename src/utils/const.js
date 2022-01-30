@@ -24,3 +24,9 @@ export const UpdateType = {
   MAJOR: 'MAJOR',
   INIT: 'INIT',
 };
+
+export const State = {
+  SAVING: 'SAVING',
+  DELETING: 'DELETING',
+  ABORTING: 'ABORTING',
+};

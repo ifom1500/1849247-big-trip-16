@@ -1,5 +1,6 @@
 import AbstractObservable from '../utils/abstract-observable.js';
 import { UpdateType } from '../utils/const.js';
+import { parseDate } from '../utils/date.js';
 
 export default class PointsModel extends AbstractObservable {
   #apiService = null;
@@ -14,9 +15,9 @@ export default class PointsModel extends AbstractObservable {
     return [...this.#points];
   }
 
-  set points(points) {
-    this.#points = [...points];
-  }
+  // set points(points) {
+  //   this.#points = [...points];
+  // }
 
   // ---------------------------
 
@@ -24,8 +25,6 @@ export default class PointsModel extends AbstractObservable {
     try {
       const points = await this.#apiService.points;
       this.#points = points.map(this.#adaptToClient);
-      // [ {id, basePrice, Date ...} .... ]
-
     } catch(err) {
       this.#points = [];
     }
@@ -66,9 +65,7 @@ export default class PointsModel extends AbstractObservable {
       const response = await this.#apiService.addTripEvent(this.#adaptToServer(update));
       const newPoint = this.#adaptToClient(response);
       this.#points = [...this.#points, newPoint];
-
-      this._notify(updateType, newPoint);
-
+      this._notify(updateType, update); //newPoint
     } catch (err) {
       throw new Error('Can\'t add new point]');
     }
@@ -87,9 +84,7 @@ export default class PointsModel extends AbstractObservable {
         ...this.#points.slice(0, index),
         ...this.#points.slice(index + 1),
       ];
-
       this._notify(updateType);
-
     } catch (err) {
       throw new Error('Can\'t delete this trip event');
     }
@@ -108,10 +103,8 @@ export default class PointsModel extends AbstractObservable {
     const adaptedPoint = {
       ...point,
       basePrice: point['base_price'],
-      dateFrom: new Date(point['date_from']),
-      // посмотерть как приходят да и нужно ли их парсить
-      // point['date_from'] может быть так
-      dateTo: new Date(point['date_to']),
+      dateFrom: parseDate(point['date_from']),
+      dateTo: parseDate(point['date_to']),
       isFavorite: point['is_favorite'],
     };
 
@@ -129,12 +122,10 @@ export default class PointsModel extends AbstractObservable {
       'base_price': point.basePrice,
       'date_from': point.dateFrom instanceof Date ? point.dateFrom.toISOString() : point.dateFrom,
       'date_to': point.dateTo instanceof Date ? point.dateTo.toISOString() : point.dateTo,
-      // посмотерть как приходят да и нужно ли их парсить
-      // 'date_from': tripEvent.dateFrom, может быть так
       'is_favorite': point.isFavorite,
     };
 
-    delete adaptedPoint.price;
+    delete adaptedPoint.basePrice;
     delete adaptedPoint.dateFrom;
     delete adaptedPoint.dateTo;
     delete adaptedPoint.isFavorite;

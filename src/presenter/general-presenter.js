@@ -13,7 +13,7 @@ import PointNewPresenter from '../presenter/point-new-presenter.js';
 import { RenderPosition, render, remove } from '../utils/render.js';
 import { SortType } from '../utils/common.js';
 import { comparePointByDay, comparePointByDuration, comparePointByPrice } from '../utils/date.js';
-import { UpdateType, UserAction, FilterType } from '../utils/const.js';
+import { UpdateType, UserAction, FilterType, State } from '../utils/const.js';
 import { filterTypeToPoint } from '../utils/filter.js';
 
 export default class GeneralPresenter {
