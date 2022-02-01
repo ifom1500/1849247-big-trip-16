@@ -1,5 +1,3 @@
-// export const EVENT_TYPES
-
 export const FilterType = {
   EVERYTHING: 'Everything',
   FUTURE: 'Future',

@@ -32,7 +32,7 @@ Promise.all([
     filterPresenter.init();
 
     const generalPresenter = new GeneralPresenter(
-      headerElement, // TODO: желательно избавится
+      headerElement,
       mainElement,
       pointsModel,
       filterModel,
@@ -44,19 +44,13 @@ Promise.all([
 
     const addPointButton = document.querySelector('.trip-main__event-add-btn');
 
-    // TODO: new point button
-    // создать компонент 'NewPointButton'
-    //  + метод добавления обработчика: NewPointButton.setCickHandler
-    //  + метод добавления обработчика: NewPointButton.setDisabled (true/false) / enabled/disabled
     addPointButton.addEventListener('click', (evt) => {
       evt.preventDefault();
 
       generalPresenter.setCancelAddPointHandler(() => {
-        // NewPointButton.setDisabled(false) | NewPointButton.enabled()
         addPointButton.disabled = false;
       });
 
-      // NewPointButton.setDisabled(true) | NewPointButton.disabled()
       addPointButton.disabled = true;
       generalPresenter.createPoint();
     });

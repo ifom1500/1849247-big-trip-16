@@ -2,7 +2,6 @@ import AbstractView from './abstract-view.js';
 import { capitalize } from '../utils/common.js';
 import { formatPointDuration } from '../utils/date.js';
 
-// Генерируем один оффер
 const createOfferTemplate = ({ title, price } = {}) => (
   `<li class="event__offer">
     <span class="event__offer-title">${title}</span>
@@ -11,14 +10,12 @@ const createOfferTemplate = ({ title, price } = {}) => (
   </li>`
 );
 
-// Собираем в список все офферы точки
 const createEventOffersListTemplate = (offers) => (
   `<ul class="event__selected-offers">
     ${offers.map(createOfferTemplate).join('')}
   </ul>`
 );
 
-// Создать шаблон разметки точки
 const createPointTemplate = (point) => {
   const {
     type,

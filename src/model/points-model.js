@@ -47,11 +47,6 @@ export default class PointsModel extends AbstractObservable {
     } catch(err) {
       throw new Error('Can\'t update point');
     }
-
-    /* TODO: оптимизация
-    this.#data = this.#data.slice();
-    this.#data[index] = update;
-    **/
   }
 
   add = async (updateType, update) => {
@@ -83,12 +78,6 @@ export default class PointsModel extends AbstractObservable {
     } catch (err) {
       throw new Error('Can\'t delete this trip event');
     }
-
-    /* TODO: оптимизация
-    this.#data = this.#data.slice();
-    this.#data.splice(...)
-    разобраться array.splice(start[, deleteCount[, item1[, item2[, ...]]]])
-    **/
   }
 
   #adaptToClient = (point) => {

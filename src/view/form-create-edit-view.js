@@ -1,4 +1,3 @@
-// import he from 'he';
 import SmartView from './smart-view.js';
 import { capitalize } from '../utils/common.js';
 import { parseDate } from '../utils/date.js';
@@ -98,7 +97,6 @@ const createFormEditTemplate = (data) => {
     isOffersExist,
     isNew,
     isDisabled,
-    isSaving, // TODO:
   } = data;
 
   const resetButtonName = isNew ? 'Cancel' : 'Delete';
@@ -362,8 +360,7 @@ export default class FormCreateEditView extends SmartView {
 
   #deleteButtonClickHandler = (evt) => {
     evt.preventDefault();
-    this._callback.deleteButtonClick(/* TaskEditView.parseDataToTask(this._data) **/);
-    // так в демо проекте 7.1.6
+    this._callback.deleteButtonClick();
   }
 
   #priceInputChangeHandler = (evt) => {
@@ -402,22 +399,6 @@ export default class FormCreateEditView extends SmartView {
   }
 
   #startDateChangeHandler = ([newStartDate]) => {
-    // newStartDate = [Wed Jul 03 2019 01:55:00 GMT+0300 (Москва, стандартное время)]
-
-    // TODO:
-    /**
-    const newStartDateConverted = parseDate(newStartDate);
-    this.updateData({dateFrom: newStartDateConverted}, true);
-    this.#endDatePicker.destroy();
-    this.#endDatePicker = null;
-    this.#setEndDatePicker();
-    */
-
-    // См:
-    // https://flatpickr.js.org/options/#:~:text=pick%20to%20(inclusive).-,minDate,-String/Date
-    // https://flatpickr.js.org/instance-methods-properties-elements/#:~:text=in%20most%20cases.-,set(option%2C%20value),-%23
-
-    // TODO: желательно так же сделать в другом: #endDateChangeHandler
     this.#endDatePicker.set('minDate', newStartDate);
   }
 

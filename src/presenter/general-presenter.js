@@ -165,10 +165,6 @@ export default class GeneralPresenter {
     render(this.#tripMainElement, this.#newEventButtonComponent, RenderPosition.BEFORE_END);
   }
 
-  #renderFiltersContainer = () => {
-    render(this.#tripControlsElement, this.#filtersContainerComponent, RenderPosition.BEFORE_END);
-  }
-
   #renderEmptyList = () => {
     if (this.#emptyListComponent !== null) {
       remove(this.#emptyListComponent);

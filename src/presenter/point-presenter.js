@@ -16,7 +16,6 @@ export default class PointPresenter {
   #pointEditComponent = null;
 
   #point = null;
-  #allOffersMap = [];
 
   #mode = Mode.DEFAULT;
   #changeMode = null;
@@ -115,7 +114,6 @@ export default class PointPresenter {
   #replaceFormToPoint = () => {
     replace(this.#pointComponent, this.#pointEditComponent);
     this.#mode = Mode.DEFAULT;
-    // this.#pointEditComponent.removeDatePickers();
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
