@@ -8,12 +8,10 @@ export default class OffersModel {
   }
 
   getByType = () => this.#offers;
-  // {'bus' => Array( id, title, price ), ...}
 
   init = async () => {
     try {
       const allOffers = await this.#apiService.offers;
-      // [ { type, offers: [] }, {} ... ]
       allOffers.forEach(({ type, offers }) => {
         this.#offers.set(type, offers);
       });

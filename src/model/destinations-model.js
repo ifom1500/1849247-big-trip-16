@@ -8,7 +8,7 @@ export default class DestinationsModel {
 
   get = () => {
     const destinations = [...this.#destinations.values()];
-    return destinations; // -> пустой массив []
+    return destinations;
   }
 
   getByName = (name) => this.#destinations.get(name);
@@ -16,7 +16,6 @@ export default class DestinationsModel {
   init = async () => {
     try {
       const destinations = await this.#apiService.destinations;
-      // [ {descr, name, pics: []}, {--} ... ]
       destinations.forEach((destination) => {
         this.#destinations.set(destination.name, destination);
       });

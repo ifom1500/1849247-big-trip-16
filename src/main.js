@@ -1,6 +1,3 @@
-// import { destinations, tripPoints } from './mock/trip-point.js';
-// import { allOffers } from './mock/trip-point.js';
-
 import GeneralPresenter from './presenter/general-presenter.js';
 import FilterPresenter from './presenter/filter-presenter.js';
 
@@ -16,8 +13,6 @@ const AUTHORIZATION = 'Basic kd93h2owoc92662q';
 
 const apiService = new ApiService(END_POINT, AUTHORIZATION);
 
-// МОДЕЛИ -----
-
 const destinationsModel = new DestinationsModel(apiService);
 const offersModel = new OffersModel(apiService);
 const filterModel = new FilterModel();
@@ -29,8 +24,6 @@ Promise.all([
   offersModel.init(),
 ])
   .finally(() => {
-
-    // ПРЕЗЕНТЕРЫ -----
 
     const headerElement = document.querySelector('.page-header');
     const mainElement = document.querySelector('.page-main');
@@ -61,7 +54,7 @@ Promise.all([
       generalPresenter.setCancelAddPointHandler(() => {
         // NewPointButton.setDisabled(false) | NewPointButton.enabled()
         addPointButton.disabled = false;
-      })
+      });
 
       // NewPointButton.setDisabled(true) | NewPointButton.disabled()
       addPointButton.disabled = true;

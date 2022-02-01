@@ -1,10 +1,8 @@
 import TripPointView from '../view/trip-point-view.js';
 import FormCreateEditView from '../view/form-create-edit-view.js';
-
 import { RenderPosition, render, replace, remove } from '../utils/render.js';
 import { isEscapeEvent } from '../utils/common.js';
-
-import {UserAction, UpdateType, State} from '../utils/const.js';
+import { UserAction, UpdateType, State } from '../utils/const.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -31,9 +29,6 @@ export default class PointPresenter {
   }
 
   init = (point, destinations, offers) => {
-    // {basePrice: 84, dateFrom: M, dateTo: M, destination: {...}, ...}
-    // [{description}, {name}, {pics}, ...]
-    // {'bus' => Array( id, title, price ), ...}
 
     this.#point = point;
 
@@ -49,13 +44,11 @@ export default class PointPresenter {
     this.#pointEditComponent.setFormSubmitHandler(this.#handleFormSubmit);
     this.#pointEditComponent.setDeleteButtonClickHandler(this.#handleDeleteButtonClick);
 
-    // отрисовка с нуля
     if (prevPointComponent === null || prevPointEditComponent === null) {
       render(this.#container, this.#pointComponent, RenderPosition.BEFORE_END);
       return;
     }
 
-    // перерисовка, если компонент уже существует
     if (this.#mode === Mode.DEFAULT) {
       replace(this.#pointComponent, prevPointComponent);
     }
@@ -111,7 +104,6 @@ export default class PointPresenter {
     }
   }
 
-
   #replacePointToForm = () => {
     replace(this.#pointEditComponent, this.#pointComponent);
     document.removeEventListener('keydown', this.#escKeyDownHandler);
@@ -137,16 +129,10 @@ export default class PointPresenter {
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
-  // принимает теперь не point а update
   #handleFormSubmit = (update) => {
-    // this.#changeData(point); // Для модели
-    // Проверяем, поменялись ли в задаче данные, которые попадают под фильтрацию,
-    // а значит требуют перерисовки списка - если таких нет, это PATCH-обновление
-
     this.#replaceFormToPoint();
     this.#changeData(
       UserAction.UPDATE_POINT,
-      // isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
       UpdateType.MINOR,
       update,
     );
@@ -161,8 +147,6 @@ export default class PointPresenter {
   }
 
   #handleFavoriteClick = () => {
-    // this.#changeData({...this.#point, isFavorite: !this.#point.isFavorite});
-    // для модели
     this.#changeData(
       UserAction.UPDATE_POINT,
       UpdateType.PATCH,

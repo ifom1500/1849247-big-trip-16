@@ -98,7 +98,7 @@ const createFormEditTemplate = (data) => {
     isOffersExist,
     isNew,
     isDisabled,
-    isSaving,
+    isSaving, // TODO:
   } = data;
 
   const resetButtonName = isNew ? 'Cancel' : 'Delete';
@@ -206,9 +206,6 @@ export default class FormCreateEditView extends SmartView {
   #allOffersMap = null;
 
   constructor(point, destinations, offers, { isNew = false }) {
-    // [{description}, {name}, {pics}, ...] = destinationsModel.#destinations
-    // {'bus' => Array( id, title, price ), ...}
-
     super();
 
     this.#destinations = destinations;
@@ -223,7 +220,6 @@ export default class FormCreateEditView extends SmartView {
     return createFormEditTemplate(this._data);
   }
 
-  // EVENT SETTERS
   setFormSubmitHandler = (callback) => {
     this._callback.formSubmit = callback;
     this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
@@ -262,9 +258,6 @@ export default class FormCreateEditView extends SmartView {
 
     this.#setDatePickers();
   }
-
-
-  // DATAPICKERS SETTERS
 
   #setStartDatePicker = () => {
     this.#startDatePicker = flatpickr(
@@ -325,9 +318,6 @@ export default class FormCreateEditView extends SmartView {
     super.removeElement();
     this.#removeDatePickers();
   }
-
-
-  // CALLBACK HANDLERS
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
@@ -414,6 +404,7 @@ export default class FormCreateEditView extends SmartView {
   #startDateChangeHandler = ([newStartDate]) => {
     // newStartDate = [Wed Jul 03 2019 01:55:00 GMT+0300 (Москва, стандартное время)]
 
+    // TODO:
     /**
     const newStartDateConverted = parseDate(newStartDate);
     this.updateData({dateFrom: newStartDateConverted}, true);
@@ -435,9 +426,6 @@ export default class FormCreateEditView extends SmartView {
     this.updateData({dateTo: newEndDateConverted}, true);
     this.#setStartDatePicker();
   };
-
-
-  // STATIC METHODS
 
   static getRenderedWithCheckboxOffers = (pointOffers, allOffers) => {
     const renderedOffers = allOffers.reduce((offers, offer) => {

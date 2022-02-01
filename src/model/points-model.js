@@ -15,14 +15,10 @@ export default class PointsModel extends AbstractObservable {
     return [...this.#data];
   }
 
-
-  // ---------------------------
-
   init = async () => {
     try {
       const points = await this.#apiService.points;
       this.#data = points.map(this.#adaptToClient);
-      // this.#data = [];
     } catch(err) {
       this.#data = [];
     }
@@ -56,29 +52,21 @@ export default class PointsModel extends AbstractObservable {
     this.#data = this.#data.slice();
     this.#data[index] = update;
     **/
-
-    // this._notify(updateType, update);
   }
 
   add = async (updateType, update) => {
     try {
-      // update = LocalPoint
-      // newPoint = Point (+'id')
       const response = await this.#apiService.addPoint(this.#adaptToServer(update));
       const newPoint = this.#adaptToClient(response);
       this.#data = [...this.#data, newPoint];
 
-      this._notify(updateType, newPoint); //newPoint
+      this._notify(updateType, newPoint);
     } catch (err) {
-      // this._notify(UpdateType.ERROR, update);
       throw new Error('Can\'t add new point]');
     }
   }
 
   delete = async (updateType, update) => {
-    /*
-
-    **/
     const index = this.#data.findIndex((item) => item.id === update.id);
 
     if (index === -1) {
@@ -101,9 +89,6 @@ export default class PointsModel extends AbstractObservable {
     this.#data.splice(...)
     разобраться array.splice(start[, deleteCount[, item1[, item2[, ...]]]])
     **/
-
-    // При удалении не нужно ?
-    // this._notify(updateType, update);
   }
 
   #adaptToClient = (point) => {

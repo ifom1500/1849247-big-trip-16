@@ -1,6 +1,5 @@
 import AbstractView from '../view/abstract-view.js';
 
-// Функция отрисовки
 export const RenderPosition = {
   BEFORE_BEGIN: 'beforebegin',
   AFTER_BEGIN: 'afterbegin',

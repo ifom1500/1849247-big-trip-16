@@ -1,10 +1,7 @@
 import FormCreateEditView from '../view/form-create-edit-view.js';
-import {remove, render, RenderPosition} from '../utils/render.js';
-import {UserAction, UpdateType} from '../utils/const.js';
-
+import { remove, render, RenderPosition } from '../utils/render.js';
+import { UserAction, UpdateType } from '../utils/const.js';
 import { getLocalPoint, isEscapeEvent } from '../utils/common.js';
-
-// const blankPoint = getBlankPoint(parseDate);
 
 export default class PointNewPresenter {
   #pointListContainer = null;
@@ -37,9 +34,6 @@ export default class PointNewPresenter {
 
     this.#pointEditComponent.setFormSubmitHandler(this.#handleFormSubmit);
     this.#pointEditComponent.setCancelClickHandler(this.#handleCancelClick);
-    // this.#pointEditComponent.setChangeDestinationHandler(this.#handleChangeDestination);
-    //  this.#pointEditComponent.setChangeTypeHandler(this.#handleChangeType);
-    // this.#pointEditComponent.setDatePickers();
 
     render(this.#pointListContainer, this.#pointEditComponent, RenderPosition.AFTER_BEGIN);
 
@@ -75,17 +69,7 @@ export default class PointNewPresenter {
     this.#pointEditComponent.shake(resetFormState);
   }
 
-  /*
-  #handleChangeDestination = (newDestination) =>
-    this.#destinationsModel.getByName(newDestination);
-
-  #handleChangeType = (newType) =>
-    this.#offersModel.getByType(newType);
-    **/
-
   #handleFormSubmit = (point) => {
-    // this.destroy();
-
     this.#changeData(
       UserAction.ADD_POINT,
       UpdateType.MINOR,

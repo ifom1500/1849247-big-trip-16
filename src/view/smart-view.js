@@ -8,12 +8,7 @@ export default class SmartView extends AbstractView {
       return;
     }
 
-    // console.log('--------------------------');
-    // console.log('Before ->', this._data);
-
     this._data = {...this._data, ...update};
-
-    // console.log('After ->', this._data);
 
     if (justDataUpdating) {
       return;

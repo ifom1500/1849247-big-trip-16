@@ -33,8 +33,8 @@ export default class GeneralPresenter {
   #newEventButtonComponent = new NewEventButtonView();
   #filtersContainerComponent = new FiltersContainerView();
 
-  #tripEventsComponent = new TripEventsView(); // <section> - сортировка + список точек
-  #eventsListComponent = new EventsListView(); // <ul> - список точек
+  #tripEventsComponent = new TripEventsView();
+  #eventsListComponent = new EventsListView();
   #loadingComponent = new LoadingView();
   #emptyListComponent = null;
   #sortingComponent = null;
@@ -46,8 +46,6 @@ export default class GeneralPresenter {
   #isLoading = true;
 
   #cancelAddPointCallback = null
-
-  // КОНСТРУКТОР --------
 
   constructor(
     headerContainer,
@@ -105,20 +103,13 @@ export default class GeneralPresenter {
     update,
   ) => {
 
-    // console.log(
-    //   'handleViewAction',
-    //   '\n actionType ->', actionType, // действие пользователя -> какой метод модели вызвать
-    //   '\n updateType ->', updateType, // тип изменений -> что после нужно обновить
-    //   '\n update ->', update // update - обновленные данные
-    // );
-
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this.#pointPresenter.get(update.id).setViewState(FormaState.SAVING)
+        this.#pointPresenter.get(update.id).setViewState(FormaState.SAVING);
         try {
           await this.#pointsModel.update(updateType, update);
         } catch(err) {
-          this.#pointPresenter.get(update.id).setViewState(FormaState.ABORTING)
+          this.#pointPresenter.get(update.id).setViewState(FormaState.ABORTING);
         }
         break;
       case UserAction.ADD_POINT:
@@ -130,11 +121,11 @@ export default class GeneralPresenter {
         }
         break;
       case UserAction.DELETE_POINT:
-        this.#pointPresenter.get(update.id).setViewState(FormaState.SAVING)
+        this.#pointPresenter.get(update.id).setViewState(FormaState.SAVING);
         try {
           await this.#pointsModel.delete(updateType, update);
         } catch(err) {
-          this.#pointPresenter.get(update.id).setViewState(FormaState.ABORTING)
+          this.#pointPresenter.get(update.id).setViewState(FormaState.ABORTING);
         }
         break;
       case UserAction.CANCEL_ADD_POINT:
@@ -144,22 +135,15 @@ export default class GeneralPresenter {
   }
 
   #handleModelEvent = (updateType, data) => {
-
-    // console.log(
-    //   'handleModelEvent',
-    //   '\n updateType ->', updateType,
-    //   '\n data ->', data
-    // );
-
     switch (updateType) {
-      case UpdateType.PATCH: // обновить часть списка (смена описания)
-        this.#pointPresenter.get(data.id).init(data, this.#destinationsModel.get(), this.#offersModel.getByType()); // вместо update - data
+      case UpdateType.PATCH:
+        this.#pointPresenter.get(data.id).init(data, this.#destinationsModel.get(), this.#offersModel.getByType());
         break;
-      case UpdateType.MINOR: // обновить список (задача в архив)
+      case UpdateType.MINOR:
         this.#clearBoard();
         this.#renderList();
         break;
-      case UpdateType.MAJOR: // обновить всю доску (переключение фильтра)
+      case UpdateType.MAJOR:
         this.#clearBoard();
         this.#renderList();
         break;
@@ -169,8 +153,6 @@ export default class GeneralPresenter {
         this.#renderBoard();
         break;
       case UpdateType.ERROR:
-        //this.#pointNewPresenter
-        // this.#pointPresenter.get(data.id)
         break;
     }
   }
@@ -181,10 +163,6 @@ export default class GeneralPresenter {
 
   #renderNewEventButton = () => {
     render(this.#tripMainElement, this.#newEventButtonComponent, RenderPosition.BEFORE_END);
-
-    // this.#newEventButtonComponent.setButtonClickHandler(() => {
-    //   this.#renderPoint();
-    // });
   }
 
   #renderFiltersContainer = () => {
@@ -236,9 +214,9 @@ export default class GeneralPresenter {
     );
 
     pointPresenter.init(
-      point, // {basePrice: 84, dateFrom: M, dateTo: M, destination: {...}, ...}
-      this.#destinationsModel.get(), // [{description}, {name}, {pics}, ...]
-      this.#offersModel.getByType(), // {'bus' => Array( id, title, price ), ...}
+      point,
+      this.#destinationsModel.get(),
+      this.#offersModel.getByType(),
     );
 
     this.#pointPresenter.set(point.id, pointPresenter);
