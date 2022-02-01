@@ -4,7 +4,7 @@ import { parseDate } from '../utils/date.js';
 
 export default class PointsModel extends AbstractObservable {
   #apiService = null;
-  #points = [];
+  #data = [];
 
   constructor(apiService) {
     super();
@@ -12,28 +12,26 @@ export default class PointsModel extends AbstractObservable {
   }
 
   get points() {
-    return [...this.#points];
+    return [...this.#data];
   }
 
-  // set points(points) {
-  //   this.#points = [...points];
-  // }
 
   // ---------------------------
 
   init = async () => {
     try {
       const points = await this.#apiService.points;
-      this.#points = points.map(this.#adaptToClient);
+      this.#data = points.map(this.#adaptToClient);
+      // this.#data = [];
     } catch(err) {
-      this.#points = [];
+      this.#data = [];
     }
 
     this._notify(UpdateType.INIT);
   }
 
   update = async (updateType, update) => {
-    const index = this.#points.findIndex((item) => item.id === update.id);
+    const index = this.#data.findIndex((item) => item.id === update.id);
 
     if (index === -1) {
       throw new Error('Can\'t update unexisting point');
@@ -42,47 +40,56 @@ export default class PointsModel extends AbstractObservable {
     try {
       const response = await this.#apiService.updatePoint(this.#adaptToServer(update));
       const updatedPoint = this.#adaptToClient(response);
-      this.#points = [
-        ...this.#points.slice(0, index),
+
+      this.#data = [
+        ...this.#data.slice(0, index),
         updatedPoint,
-        ...this.#points.slice(index + 1),
+        ...this.#data.slice(index + 1),
       ];
+
       this._notify(updateType, update);
     } catch(err) {
       throw new Error('Can\'t update point');
     }
 
     /* TODO: оптимизация
-    this.#points = this.#points.slice();
-    this.#points[index] = update;
+    this.#data = this.#data.slice();
+    this.#data[index] = update;
     **/
 
-    this._notify(updateType, update);
+    // this._notify(updateType, update);
   }
 
   add = async (updateType, update) => {
     try {
-      const response = await this.#apiService.addTripEvent(this.#adaptToServer(update));
+      // update = LocalPoint
+      // newPoint = Point (+'id')
+      const response = await this.#apiService.addPoint(this.#adaptToServer(update));
       const newPoint = this.#adaptToClient(response);
-      this.#points = [...this.#points, newPoint];
-      this._notify(updateType, update); //newPoint
+      this.#data = [...this.#data, newPoint];
+
+      this._notify(updateType, newPoint); //newPoint
     } catch (err) {
+      // this._notify(UpdateType.ERROR, update);
       throw new Error('Can\'t add new point]');
     }
   }
 
   delete = async (updateType, update) => {
-    const index = this.#points.findIndex((item) => item.id === update.id);
+    /*
+
+    **/
+    const index = this.#data.findIndex((item) => item.id === update.id);
 
     if (index === -1) {
       throw new Error('Can\'t delete unexisting point');
     }
 
     try {
-      await this.#apiService.delete(update);
-      this.#points = [
-        ...this.#points.slice(0, index),
-        ...this.#points.slice(index + 1),
+      await this.#apiService.deletePoint(update);
+      this.#data = [
+        ...this.#data.slice(0, index),
+        ...this.#data.slice(index + 1),
       ];
       this._notify(updateType);
     } catch (err) {
@@ -90,8 +97,8 @@ export default class PointsModel extends AbstractObservable {
     }
 
     /* TODO: оптимизация
-    this.#points = this.#points.slice();
-    this.#points.splice(...)
+    this.#data = this.#data.slice();
+    this.#data.splice(...)
     разобраться array.splice(start[, deleteCount[, item1[, item2[, ...]]]])
     **/
 
@@ -120,8 +127,8 @@ export default class PointsModel extends AbstractObservable {
     const adaptedPoint = {
       ...point,
       'base_price': point.basePrice,
-      'date_from': point.dateFrom instanceof Date ? point.dateFrom.toISOString() : point.dateFrom,
-      'date_to': point.dateTo instanceof Date ? point.dateTo.toISOString() : point.dateTo,
+      'date_from': point.dateFrom.toISOString(),
+      'date_to': point.dateTo.toISOString(),
       'is_favorite': point.isFavorite,
     };
 

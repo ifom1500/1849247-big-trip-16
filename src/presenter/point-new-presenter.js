@@ -2,10 +2,9 @@ import FormCreateEditView from '../view/form-create-edit-view.js';
 import {remove, render, RenderPosition} from '../utils/render.js';
 import {UserAction, UpdateType} from '../utils/const.js';
 
-import { getBlankPoint } from '../utils/common.js';
-import { parseDate } from '../utils/date.js';
+import { getLocalPoint, isEscapeEvent } from '../utils/common.js';
 
-const blankPoint = getBlankPoint(parseDate);
+// const blankPoint = getBlankPoint(parseDate);
 
 export default class PointNewPresenter {
   #pointListContainer = null;
@@ -27,18 +26,20 @@ export default class PointNewPresenter {
       return;
     }
 
+    const localPoint = getLocalPoint();
+
     this.#pointEditComponent = new FormCreateEditView(
-      blankPoint,
+      localPoint,
       this.#destinationsModel.get(),
       this.#offersModel.getByType(),
       { isNew: true }
     );
 
     this.#pointEditComponent.setFormSubmitHandler(this.#handleFormSubmit);
-    this.#pointEditComponent.setDeleteClickHandler(this.#handleDeleteClick);
-    this.#pointEditComponent.setChangeDestinationHandler(this.#handleChangeDestination);
-    this.#pointEditComponent.setChangeTypeHandler(this.#handleChangeType);
-    this.#pointEditComponent.setDatePickers();
+    this.#pointEditComponent.setCancelClickHandler(this.#handleCancelClick);
+    // this.#pointEditComponent.setChangeDestinationHandler(this.#handleChangeDestination);
+    //  this.#pointEditComponent.setChangeTypeHandler(this.#handleChangeType);
+    // this.#pointEditComponent.setDatePickers();
 
     render(this.#pointListContainer, this.#pointEditComponent, RenderPosition.AFTER_BEGIN);
 
@@ -56,27 +57,54 @@ export default class PointNewPresenter {
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
+  setSaving = () => {
+    this.#pointEditComponent.updateData({
+      isDisabled: true,
+      isSaving: true,
+    }, false);
+  }
+
+  setAborting = () => {
+    const resetFormState = () => {
+      this.#pointEditComponent.updateData({
+        isDisabled: false,
+        isSaving: false,
+      }, false);
+    };
+
+    this.#pointEditComponent.shake(resetFormState);
+  }
+
+  /*
   #handleChangeDestination = (newDestination) =>
     this.#destinationsModel.getByName(newDestination);
 
   #handleChangeType = (newType) =>
     this.#offersModel.getByType(newType);
+    **/
 
   #handleFormSubmit = (point) => {
+    // this.destroy();
+
     this.#changeData(
       UserAction.ADD_POINT,
       UpdateType.MINOR,
       point,
     );
-    this.destroy();
   }
 
-  #handleDeleteClick = () => {
+  #handleCancelClick = () => {
     this.destroy();
+
+    this.#changeData(
+      UserAction.CANCEL_ADD_POINT,
+      UpdateType.NONE,
+      null,
+    );
   }
 
   #escKeyDownHandler = (evt) => {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
+    if (isEscapeEvent(evt)) {
       evt.preventDefault();
       this.destroy();
     }

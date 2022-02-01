@@ -13,7 +13,7 @@ import PointNewPresenter from '../presenter/point-new-presenter.js';
 import { RenderPosition, render, remove } from '../utils/render.js';
 import { SortType } from '../utils/common.js';
 import { comparePointByDay, comparePointByDuration, comparePointByPrice } from '../utils/date.js';
-import { UpdateType, UserAction, FilterType, State } from '../utils/const.js';
+import { UpdateType, UserAction, FilterType, State as FormaState } from '../utils/const.js';
 import { filterTypeToPoint } from '../utils/filter.js';
 
 export default class GeneralPresenter {
@@ -45,6 +45,8 @@ export default class GeneralPresenter {
   #currentSortType = SortType.DAY;
   #isLoading = true;
 
+  #cancelAddPointCallback = null
+
   // КОНСТРУКТОР --------
 
   constructor(
@@ -65,13 +67,6 @@ export default class GeneralPresenter {
 
     this.#pointsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
-
-    this.#pointNewPresenter = new PointNewPresenter(
-      this.#eventsListComponent,
-      this.#handleViewAction,
-      this.#destinationsModel,
-      this.#offersModel
-    );
   }
 
   get points() {
@@ -100,7 +95,11 @@ export default class GeneralPresenter {
     this.#renderBoard();
   }
 
-  #handleViewAction = (
+  setCancelAddPointHandler = (callback) => {
+    this.#cancelAddPointCallback = callback;
+  }
+
+  #handleViewAction = async (
     actionType,
     updateType,
     update,
@@ -115,13 +114,31 @@ export default class GeneralPresenter {
 
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this.#pointsModel.update(updateType, update);
+        this.#pointPresenter.get(update.id).setViewState(FormaState.SAVING)
+        try {
+          await this.#pointsModel.update(updateType, update);
+        } catch(err) {
+          this.#pointPresenter.get(update.id).setViewState(FormaState.ABORTING)
+        }
         break;
       case UserAction.ADD_POINT:
-        this.#pointsModel.addPoint(updateType, update);
+        this.#pointNewPresenter.setSaving();
+        try {
+          await this.#pointsModel.add(updateType, update);
+        } catch(err) {
+          this.#pointNewPresenter.setAborting();
+        }
         break;
       case UserAction.DELETE_POINT:
-        this.#pointsModel.deletePoint(updateType, update);
+        this.#pointPresenter.get(update.id).setViewState(FormaState.SAVING)
+        try {
+          await this.#pointsModel.delete(updateType, update);
+        } catch(err) {
+          this.#pointPresenter.get(update.id).setViewState(FormaState.ABORTING)
+        }
+        break;
+      case UserAction.CANCEL_ADD_POINT:
+        this.#destroyNewPointPresenter();
         break;
     }
   }
@@ -136,7 +153,7 @@ export default class GeneralPresenter {
 
     switch (updateType) {
       case UpdateType.PATCH: // обновить часть списка (смена описания)
-        this.#pointPresenter.get(data.id).init(data); // вместо update - data
+        this.#pointPresenter.get(data.id).init(data, this.#destinationsModel.get(), this.#offersModel.getByType()); // вместо update - data
         break;
       case UpdateType.MINOR: // обновить список (задача в архив)
         this.#clearBoard();
@@ -150,6 +167,10 @@ export default class GeneralPresenter {
         this.#isLoading = false;
         remove(this.#loadingComponent);
         this.#renderBoard();
+        break;
+      case UpdateType.ERROR:
+        //this.#pointNewPresenter
+        // this.#pointPresenter.get(data.id)
         break;
     }
   }
@@ -171,11 +192,20 @@ export default class GeneralPresenter {
   }
 
   #renderEmptyList = () => {
+    if (this.#emptyListComponent !== null) {
+      remove(this.#emptyListComponent);
+    }
+
     this.#emptyListComponent = new EmptyListView(this.#filterModel.type);
     render(this.#mainContainerElement, this.#emptyListComponent, RenderPosition.AFTER_BEGIN);
   }
 
   #renderTripEvents = () => {
+    if (this.#emptyListComponent !== null) {
+      remove(this.#emptyListComponent);
+      this.#renderEventsList();
+    }
+
     render(this.#mainContainerElement, this.#tripEventsComponent, RenderPosition.AFTER_BEGIN);
   }
 
@@ -187,6 +217,10 @@ export default class GeneralPresenter {
   }
 
   #renderEventsList = () => {
+    if (this.#tripEventsComponent.element.contains(this.#eventsListComponent.element)) {
+      return;
+    }
+
     render(this.#tripEventsComponent, this.#eventsListComponent, RenderPosition.BEFORE_END);
   }
 
@@ -215,14 +249,45 @@ export default class GeneralPresenter {
   }
 
   createPoint = () => {
+    this.#renderTripEvents();
+    this.#pointPresenter.forEach((presenter) => presenter.resetView());
+
+    this.#pointNewPresenter = new PointNewPresenter(
+      this.#eventsListComponent,
+      this.#handleViewAction,
+      this.#destinationsModel,
+      this.#offersModel
+    );
+
     this.#currentSortType = SortType.DAY;
     this.#filterModel.set(UpdateType.MAJOR, FilterType.EVERYTHING);
     this.#pointNewPresenter.init();
   }
 
-  #handleModeChange = () => {
-    this.#pointNewPresenter.destroy();
+  #destroyNewPointPresenter = () => {
+    if (this.#pointNewPresenter !== null) {
+      this.#pointNewPresenter.destroy();
+      this.#handleCancelAddPoint();
+
+      if (this.points.length === 0) {
+        this.#renderEmptyList();
+      }
+    }
+  }
+
+  #resetPresenterViews = () => {
+    this.#destroyNewPointPresenter();
     this.#pointPresenter.forEach((presenter) => presenter.resetView());
+  }
+
+  #handleCancelAddPoint = () => {
+    if (this.#cancelAddPointCallback !== null) {
+      this.#cancelAddPointCallback();
+    }
+  }
+
+  #handleModeChange = () => {
+    this.#resetPresenterViews();
   }
 
   #handleSortTypeChange = (sortType) => {
@@ -236,7 +301,7 @@ export default class GeneralPresenter {
   }
 
   #clearBoard = ({resetSortType = false} = {}) => {
-    this.#pointNewPresenter.destroy();
+    this.#destroyNewPointPresenter();
     this.#pointPresenter.forEach((presenter) => presenter.destroy());
     this.#pointPresenter.clear();
 
@@ -258,7 +323,6 @@ export default class GeneralPresenter {
       this.#renderLoading();
       return;
     }
-
 
     this.#renderMenu();
     this.#renderNewEventButton();

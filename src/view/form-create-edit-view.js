@@ -77,6 +77,12 @@ const createDestinationSectionTemplate = (destination, isDescriptionExist, isPic
   </section>`
 );
 
+const createRollupButtonTemplate = () => (
+  `<button class="event__rollup-btn" type="button">
+    <span class="visually-hidden">Open event</span>
+  </button>`
+);
+
 const createFormEditTemplate = (data) => {
   const {
     type,
@@ -90,12 +96,20 @@ const createFormEditTemplate = (data) => {
     isDescriptionExist,
     isPicturesExist,
     isOffersExist,
+    isNew,
+    isDisabled,
+    isSaving,
   } = data;
 
+  const resetButtonName = isNew ? 'Cancel' : 'Delete';
+
+  const rollupButtonTemplate = isNew ? '' : createRollupButtonTemplate();
   const eventTypeListTemplate = createEventTypeListTemplate(type, POINT_TYPES);
   const destinationListTemplate = createDestinationListTemplate(destinationNames);
   const offersSectionTemplate = createOffersSectionTemplate(offers, isOffersExist);
-  const destinationSectionTemplate = isDestinationExist ? createDestinationSectionTemplate(destination, isDescriptionExist, isPicturesExist) : '';
+  const destinationSectionTemplate = isDestinationExist
+    ? createDestinationSectionTemplate(destination, isDescriptionExist, isPicturesExist) :
+    '';
 
   return `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -130,7 +144,9 @@ const createFormEditTemplate = (data) => {
             type="text"
             name="event-destination"
             value="${destination.name}"
-            list="destination-list-1">
+            list="destination-list-1"
+            required
+          >
           <datalist id="destination-list-1">
             ${destinationListTemplate}
           </datalist>
@@ -164,15 +180,13 @@ const createFormEditTemplate = (data) => {
             id="event-price-1"
             type="number"
             name="event-price"
-            min="0"
+            min="1"
             value="${basePrice}">
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-        <button class="event__reset-btn" type="reset">Delete</button>
-        <button class="event__rollup-btn" type="button">
-          <span class="visually-hidden">Open event</span>
-        </button>
+        <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>Save</button>
+        <button class="event__reset-btn" type="reset">${resetButtonName}</button>
+        ${rollupButtonTemplate}
       </header>
       <section class="event__details">
 
@@ -191,7 +205,7 @@ export default class FormCreateEditView extends SmartView {
   #destinations = null;
   #allOffersMap = null;
 
-  constructor(point, destinations, offers) {
+  constructor(point, destinations, offers, { isNew = false }) {
     // [{description}, {name}, {pics}, ...] = destinationsModel.#destinations
     // {'bus' => Array( id, title, price ), ...}
 
@@ -200,7 +214,7 @@ export default class FormCreateEditView extends SmartView {
     this.#destinations = destinations;
     this.#allOffersMap = offers;
 
-    this._data = FormCreateEditView.parsePointToData(point, destinations, offers);
+    this._data = FormCreateEditView.parsePointToData(point, destinations, offers, isNew);
 
     this.#setInnerHandlers();
   }
@@ -215,12 +229,21 @@ export default class FormCreateEditView extends SmartView {
     this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
   }
 
-  setResetButtonClickHandler = (callback) => {
-    this._callback.resetButtonClick = callback;
-    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#resetButtonClickHandler);
+  setDeleteButtonClickHandler = (callback) => {
+    this._callback.deleteButtonClick = callback;
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deleteButtonClickHandler);
+  }
+
+  setCancelClickHandler = (callback) => {
+    this.setDeleteButtonClickHandler(callback);
   }
 
   setRollupButtonClickHandler = (callback) => {
+    const rollupButton = this.element.querySelector('.event__rollup-btn');
+    if (rollupButton === null) {
+      return;
+    }
+
     this._callback.rollupButtonClick = callback;
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rollupButtonClickHandler);
   }
@@ -236,6 +259,8 @@ export default class FormCreateEditView extends SmartView {
 
     element.querySelector('.event__type-group').addEventListener('change', this.#typeInputChangeHandler);
     element.querySelector('.event__input--price').addEventListener('input', this.#priceInputChangeHandler);
+
+    this.#setDatePickers();
   }
 
 
@@ -265,18 +290,17 @@ export default class FormCreateEditView extends SmartView {
     );
   }
 
-  setDatePickers = () => {
+  #setDatePickers = () => {
     this.#setStartDatePicker();
     this.#setEndDatePicker();
   }
 
   restoreHandlers = () => {
     this.#setInnerHandlers();
-    this.setDatePickers();
 
     this.setRollupButtonClickHandler(this._callback.rollupButtonClick);
     this.setFormSubmitHandler(this._callback.formSubmit);
-    this.setResetButtonClickHandler(this._callback.resetButtonClick);
+    this.setDeleteButtonClickHandler(this._callback.deleteButtonClick);
   }
 
   reset = (point) => {
@@ -285,7 +309,7 @@ export default class FormCreateEditView extends SmartView {
     ), false);
   }
 
-  removeDatePickers = () => {
+  #removeDatePickers = () => {
     if (this.#startDatePicker) {
       this.#startDatePicker.destroy();
       this.#startDatePicker = null;
@@ -299,7 +323,7 @@ export default class FormCreateEditView extends SmartView {
 
   removeElement = () => {
     super.removeElement();
-    this.removeDatePickers();
+    this.#removeDatePickers();
   }
 
 
@@ -346,15 +370,15 @@ export default class FormCreateEditView extends SmartView {
     this._callback.rollupButtonClick();
   }
 
-  #resetButtonClickHandler = (evt) => {
+  #deleteButtonClickHandler = (evt) => {
     evt.preventDefault();
-    this._callback.resetButtonClick(/* TaskEditView.parseDataToTask(this._data) **/);
+    this._callback.deleteButtonClick(/* TaskEditView.parseDataToTask(this._data) **/);
     // так в демо проекте 7.1.6
   }
 
   #priceInputChangeHandler = (evt) => {
     evt.preventDefault();
-    this.updateData({basePrice: +evt.target.value}, true);
+    this.updateData({basePrice: evt.target.valueAsNumber}, true);
   }
 
   #destinationInputChangeHandler = (evt) => {
@@ -428,7 +452,7 @@ export default class FormCreateEditView extends SmartView {
     return renderedOffers;
   };
 
-  static parsePointToData = (point, destinations, allOffersMap) => {
+  static parsePointToData = (point, destinations, allOffersMap, isNew) => {
     const {
       type,
       offers,
@@ -450,6 +474,9 @@ export default class FormCreateEditView extends SmartView {
       isDescriptionExist,
       isPicturesExist,
       isOffersExist,
+      isNew,
+      isDisabled: false,
+      isSaving: false,
     };
   };
 
@@ -461,6 +488,7 @@ export default class FormCreateEditView extends SmartView {
     delete point.isPicturesExist;
     delete point.isOffersExist;
     delete point.destinationNames;
+    delete point.isNew;
 
     return point;
   }

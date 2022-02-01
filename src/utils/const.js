@@ -16,6 +16,7 @@ export const UserAction = {
   UPDATE_POINT: 'UPDATE_POINT',
   ADD_POINT: 'ADD_POINT',
   DELETE_POINT: 'DELETE_POINT',
+  CANCEL_ADD_POINT: 'CANCEL_ADD_POINT',
 };
 
 export const UpdateType = {
@@ -23,6 +24,8 @@ export const UpdateType = {
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
   INIT: 'INIT',
+  ERROR: 'ERROR',
+  NONE: 'NONE',
 };
 
 export const State = {
