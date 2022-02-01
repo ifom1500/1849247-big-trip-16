@@ -1,7 +1,7 @@
 import SmartView from './smart-view.js';
 import { capitalize } from '../utils/common.js';
+import { PointType } from '../utils/const.js';
 import { parseDate } from '../utils/date.js';
-import { PointType } from '../utils/common.js';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 

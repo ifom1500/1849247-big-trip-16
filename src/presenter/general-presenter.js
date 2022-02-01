@@ -11,7 +11,7 @@ import PointPresenter from '../presenter/point-presenter.js';
 import PointNewPresenter from '../presenter/point-new-presenter.js';
 
 import { RenderPosition, render, remove } from '../utils/render.js';
-import { SortType } from '../utils/common.js';
+import { SortType } from '../utils/const.js';
 import { comparePointByDay, comparePointByDuration, comparePointByPrice } from '../utils/date.js';
 import { UpdateType, UserAction, FilterType, State as FormaState } from '../utils/const.js';
 import { filterTypeToPoint } from '../utils/filter.js';
