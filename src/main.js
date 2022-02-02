@@ -6,47 +6,52 @@ import FilterModel from './model/filter-model.js';
 import DestinationsModel from './model/destinations-model.js';
 import OffersModel from './model/offers-model.js';
 
-import { destinations, tripPoints } from './mock/trip-point.js';
-import { allOffers } from './mock/trip-point.js';
+import ApiService from './api-service.js';
 
+const END_POINT = 'https://16.ecmascript.pages.academy/big-trip/';
+const AUTHORIZATION = 'Basic kd93h2owoc92662q';
 
-// МОДЕЛИ -----
+const apiService = new ApiService(END_POINT, AUTHORIZATION);
 
-const destinationsModel = new DestinationsModel();
-destinationsModel.set(destinations);
-
-const offersModel = new OffersModel();
-offersModel.set(allOffers);
-
+const destinationsModel = new DestinationsModel(apiService);
+const offersModel = new OffersModel(apiService);
 const filterModel = new FilterModel();
+const pointsModel = new PointsModel(apiService);
 
-const pointsModel = new PointsModel();
-pointsModel.points = tripPoints;
+Promise.all([
+  pointsModel.init(),
+  destinationsModel.init(),
+  offersModel.init(),
+])
+  .finally(() => {
 
-const headerElement = document.querySelector('.page-header');
-const mainElement = document.querySelector('.page-main');
+    const headerElement = document.querySelector('.page-header');
+    const mainElement = document.querySelector('.page-main');
 
+    const filterPresenter = new FilterPresenter(headerElement.querySelector('.trip-controls'), filterModel);
+    filterPresenter.init();
 
-// ПРЕЗЕНТЕРЫ -----
+    const generalPresenter = new GeneralPresenter(
+      headerElement,
+      mainElement,
+      pointsModel,
+      filterModel,
+      destinationsModel,
+      offersModel
+    );
 
-const filterPresenter = new FilterPresenter(headerElement.querySelector('.trip-controls'), filterModel);
-filterPresenter.init();
+    generalPresenter.init();
 
-const generalPresenter = new GeneralPresenter(
-  headerElement, // TODO: желательно избавится
-  mainElement,
-  pointsModel,
-  filterModel,
-  destinationsModel,
-  offersModel
-);
+    const addPointButton = document.querySelector('.trip-main__event-add-btn');
 
-generalPresenter.init();
+    addPointButton.addEventListener('click', (evt) => {
+      evt.preventDefault();
 
-// TODO: new point button
-// создать компонент 'NewPointButton'
-//  + метод добавления обработчика: NewPointButton.setCickHandler
-document.querySelector('.trip-main__event-add-btn').addEventListener('click', (evt) => {
-  evt.preventDefault();
-  generalPresenter.createPoint();
-});
+      generalPresenter.setCancelAddPointHandler(() => {
+        addPointButton.disabled = false;
+      });
+
+      addPointButton.disabled = true;
+      generalPresenter.createPoint();
+    });
+  });

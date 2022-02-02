@@ -1,6 +1,6 @@
 import FiltersView from '../view/filters-view.js';
-import {render, RenderPosition, replace, remove} from '../utils/render.js';
-import {FilterType, UpdateType} from '../utils/const.js';
+import { render, RenderPosition, replace, remove } from '../utils/render.js';
+import { FilterType, UpdateType } from '../utils/const.js';
 
 export default class FilterPresenter {
   #containerElement = null;
@@ -14,8 +14,7 @@ export default class FilterPresenter {
     this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
-  // TODO: доработать -> static method или const TRIP_FILTERS (const.js)
-  #getFilters = () => (
+  static getFilters = () => (
     [
       {
         type: FilterType.EVERYTHING,
@@ -33,7 +32,7 @@ export default class FilterPresenter {
   )
 
   init = () => {
-    const filters = this.#getFilters();
+    const filters = FilterPresenter.getFilters();
     const prevFilterComponent = this.#filterComponent;
 
     this.#filterComponent = new FiltersView(filters, this.#filterModel.type);
@@ -46,6 +45,14 @@ export default class FilterPresenter {
 
     replace(this.#filterComponent, prevFilterComponent);
     remove(prevFilterComponent);
+  }
+
+  destroy = () => {
+    remove(this.#filterComponent);
+    this.#filterComponent = null;
+
+    this.#filterModel.removeObserver(this.#handleModelEvent);
+    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
   }
 
   #handleModelEvent = () => {

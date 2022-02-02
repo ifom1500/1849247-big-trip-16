@@ -1,12 +1,7 @@
 import FormCreateEditView from '../view/form-create-edit-view.js';
-import {generatePoorId} from '../mock/trip-point.js';
-import {remove, render, RenderPosition} from '../utils/render.js';
-import {UserAction, UpdateType} from '../utils/const.js';
-
-import { getBlankPoint } from '../utils/common.js';
-import { parseDate } from '../utils/date.js';
-
-const blankPoint = getBlankPoint(parseDate);
+import { remove, render, RenderPosition } from '../utils/render.js';
+import { UserAction, UpdateType } from '../utils/const.js';
+import { getLocalPoint, isEscapeEvent } from '../utils/common.js';
 
 export default class PointNewPresenter {
   #pointListContainer = null;
@@ -28,17 +23,17 @@ export default class PointNewPresenter {
       return;
     }
 
-    //TODO: доработать
+    const localPoint = getLocalPoint();
 
-    // const destinationInfo = this.#destinationsModel.getByName(DESTINATIONS[0]);
-    // const currentOffersOfType = this.#offersModel.getByType(EVENT_TYPES[0]);
-
-    this.#pointEditComponent = new FormCreateEditView(blankPoint, /* destinationInfo, currentOffersOfType **/);
+    this.#pointEditComponent = new FormCreateEditView(
+      localPoint,
+      this.#destinationsModel.get(),
+      this.#offersModel.getByType(),
+      { isNew: true }
+    );
 
     this.#pointEditComponent.setFormSubmitHandler(this.#handleFormSubmit);
-    this.#pointEditComponent.setDeleteClickHandler(this.#handleDeleteClick);
-    this._editFormComponent.setChangeDestinationHandler(this.#handleChangeDestination);
-    this._editFormComponent.setChangeTypeHandler(this.#handleChangeType);
+    this.#pointEditComponent.setCancelClickHandler(this.#handleCancelClick);
 
     render(this.#pointListContainer, this.#pointEditComponent, RenderPosition.AFTER_BEGIN);
 
@@ -56,27 +51,44 @@ export default class PointNewPresenter {
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
-  #handleChangeDestination = (newDestination) =>
-    this.#destinationsModel.getByName(newDestination);
+  setSaving = () => {
+    this.#pointEditComponent.updateData({
+      isDisabled: true,
+      isSaving: true,
+    }, false);
+  }
 
-  #handleChangeType = (newType) =>
-    this.#offersModel.getByType(newType);
+  setAborting = () => {
+    const resetFormState = () => {
+      this.#pointEditComponent.updateData({
+        isDisabled: false,
+        isSaving: false,
+      }, false);
+    };
+
+    this.#pointEditComponent.shake(resetFormState);
+  }
 
   #handleFormSubmit = (point) => {
     this.#changeData(
       UserAction.ADD_POINT,
       UpdateType.MINOR,
-      {id: generatePoorId(), ...point},
+      point,
     );
-    this.destroy();
   }
 
-  #handleDeleteClick = () => {
+  #handleCancelClick = () => {
     this.destroy();
+
+    this.#changeData(
+      UserAction.CANCEL_ADD_POINT,
+      UpdateType.NONE,
+      null,
+    );
   }
 
   #escKeyDownHandler = (evt) => {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
+    if (isEscapeEvent(evt)) {
       evt.preventDefault();
       this.destroy();
     }
