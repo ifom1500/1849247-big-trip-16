@@ -37,7 +37,7 @@ Promise.all([
       pointsModel,
       filterModel,
       destinationsModel,
-      offersModel
+      offersModel,
     );
 
     generalPresenter.init();
