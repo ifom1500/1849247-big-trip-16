@@ -22,6 +22,8 @@ export const PointType = {
   RESTAURANT: 'restaurant',
 };
 
+export const POINT_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+
 export const UserAction = {
   UPDATE_POINT: 'UPDATE_POINT',
   ADD_POINT: 'ADD_POINT',
@@ -42,6 +44,11 @@ export const State = {
   SAVING: 'SAVING',
   DELETING: 'DELETING',
   ABORTING: 'ABORTING',
+};
+
+export const NavigationItem = {
+  TABLE: 'table',
+  STATS: 'stats',
 };
 
 export const ESCAPE_KEYS = ['Escape', 'Esc'];
