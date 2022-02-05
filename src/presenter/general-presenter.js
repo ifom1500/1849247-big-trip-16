@@ -192,11 +192,6 @@ export default class GeneralPresenter {
     if (this.#messageComponent !== null) {
       remove(this.#messageComponent);
     }
-    /*
-    if (this.#tripEventsComponent.element.contains(this.#eventsListComponent.element)) {
-      return;
-    }
-    **/
 
     render(this.#tripEventsComponent, this.#eventsListComponent, RenderPosition.BEFORE_END);
   }

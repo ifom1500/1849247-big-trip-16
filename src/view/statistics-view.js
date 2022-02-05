@@ -23,11 +23,6 @@ export default class StatisticsView extends AbstractView {
   constructor(charts) {
     super();
 
-    /*
-    const charts = [
-      { id: 'money', text: 'MONEY', labels: ['test'], data: [1] },
-    ];
-    **/
     this.#charts = charts;
 
     this.#init();
