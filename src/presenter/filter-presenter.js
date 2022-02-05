@@ -14,23 +14,6 @@ export default class FilterPresenter {
     this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
-  static getFilters = () => (
-    [
-      {
-        type: FilterType.EVERYTHING,
-        name: 'Everything',
-      },
-      {
-        type: FilterType.FUTURE,
-        name: 'Future',
-      },
-      {
-        type: FilterType.PAST,
-        name: 'Past',
-      },
-    ]
-  )
-
   init = () => {
     const filters = FilterPresenter.getFilters();
     const prevFilterComponent = this.#filterComponent;
@@ -52,7 +35,7 @@ export default class FilterPresenter {
     this.#filterComponent = null;
 
     this.#filterModel.removeObserver(this.#handleModelEvent);
-    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+    this.#filterModel.set(UpdateType.MAJOR, FilterType.EVERYTHING);
   }
 
   #handleModelEvent = () => {
@@ -66,4 +49,21 @@ export default class FilterPresenter {
 
     this.#filterModel.set(UpdateType.MAJOR, filterType);
   }
+
+  static getFilters = () => (
+    [
+      {
+        type: FilterType.EVERYTHING,
+        name: 'Everything',
+      },
+      {
+        type: FilterType.FUTURE,
+        name: 'Future',
+      },
+      {
+        type: FilterType.PAST,
+        name: 'Past',
+      },
+    ]
+  )
 }

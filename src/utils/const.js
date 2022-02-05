@@ -22,7 +22,7 @@ export const PointType = {
   RESTAURANT: 'restaurant',
 };
 
-export const POINT_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+export const POINT_TYPES = Object.values(PointType);
 
 export const UserAction = {
   UPDATE_POINT: 'UPDATE_POINT',
@@ -52,3 +52,10 @@ export const NavigationItem = {
 };
 
 export const ESCAPE_KEYS = ['Escape', 'Esc'];
+
+export  const PointMessage = {
+  LOADING: 'Loading...',
+  CREATE_POINT: 'Click New Event to create your first point',
+  NO_PAST_EVENTS: 'There are no past events now',
+  NO_FUTURE_EVENTS: 'There are no future events now',
+};

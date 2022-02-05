@@ -49,6 +49,12 @@ export default class PointNewPresenter {
     this.#pointEditComponent = null;
 
     document.removeEventListener('keydown', this.#escKeyDownHandler);
+
+    this.#changeData(
+      UserAction.CANCEL_ADD_POINT,
+      UpdateType.NONE,
+      null,
+    );
   }
 
   setSaving = () => {
@@ -79,12 +85,6 @@ export default class PointNewPresenter {
 
   #handleCancelClick = () => {
     this.destroy();
-
-    this.#changeData(
-      UserAction.CANCEL_ADD_POINT,
-      UpdateType.NONE,
-      null,
-    );
   }
 
   #escKeyDownHandler = (evt) => {

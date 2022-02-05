@@ -1,132 +1,59 @@
-import SmartView from './smart-view.js';
-import { POINT_TYPES } from '../utils/const.js';
-import { ChartsOptions } from '../utils/stats';
-import Chart from 'chart.js';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
+import AbstractView from './abstract-view.js';
+import { createChart } from '../utils/chart.js';
 
 const BAR_HEIGHT = 55;
 
-const createStatsItemTemplate = (chartType) => (
+const createStatsItemTemplate = ({ id, height }) => (
   `<div class="statistics__item">
-    <canvas class="statistics__chart" id="${chartType}" width="900"></canvas>
+    <canvas class="statistics__chart" id="${id}" width="900" height=${height}></canvas>
   </div>`
 );
 
-const createStatsTemplate = (chartTypes) => {
-  const statItemsTemplate = chartTypes.map((type) => createStatsItemTemplate(type)).join('');
+const createStatsTemplate = (data) => (
+  `<section class="statistics">
+    <h2 class="visually-hidden">Trip statistics</h2>
+    ${data.map(createStatsItemTemplate).join('')}
+  </section>`
+);
 
-  return (
-    `<section class="statistics">
-      <h2 class="visually-hidden">Trip statistics</h2>
-      ${statItemsTemplate}
-    </section>`
-  );
-};
+export default class StatisticsView extends AbstractView {
+  #ids = {};
+  #charts = [];
 
-export default class StatisticsView extends SmartView {
-  #chartTypes = ['money', 'type', 'time'];
-  #charts = new Map();
-  #chartLabels = null;
-
-  constructor(points) {
+  constructor(charts) {
     super();
-    this._data = [...points];
-    this.#chartLabels = POINT_TYPES.map((type) => type.toUpperCase());
 
-    this.#setCharts();
+    /*
+    const charts = [
+      { id: 'money', text: 'MONEY', labels: ['test'], data: [1] },
+    ];
+    **/
+    this.#charts = charts;
+
+    this.#init();
   }
 
   get template() {
-    return createStatsTemplate(this.#chartTypes);
+    const data = this.#charts.map(({ id, labels }) => ({
+      id,
+      height: labels.length * BAR_HEIGHT,
+    }));
+
+    return createStatsTemplate(data);
   }
 
-  #getChartsData = (points, chartType) => POINT_TYPES.map((type) => chartType(points, type));
-  #setDataObject = (chartLabels, chartData) => chartLabels.map((label, index) => ({label, data: chartData[index]}));
+  removeElement = () => {
+    super.removeElement();
 
-  #setCharts = () => {
-    this.#chartTypes.forEach((chartType) => {
-      const sortedChartLabels = [];
-      const sortedChartData = [];
+    Object.values(this.#ids).forEach((chart) => chart.destroy());
+    this.#ids = {};
+  }
 
-      const chartCanvas = this.element.querySelector(`#${chartType}`);
-      chartCanvas.height = BAR_HEIGHT * POINT_TYPES.length;
+  #init = () => {
+    const element = this.element;
 
-      const chartTypeUpperCase = chartType.toUpperCase();
-      const chartData = this.#getChartsData(this._data, ChartsOptions[chartTypeUpperCase].setData);
-      const chartDataObjects = this.#setDataObject(this.#chartLabels, chartData);
-
-      chartDataObjects.sort((dataA, dataB) => dataB.data - dataA.data);
-
-      chartDataObjects.forEach((object) => {
-        sortedChartLabels.push(object.label);
-        sortedChartData.push(object.data);
-      });
-
-      this.#charts.set(chartTypeUpperCase, new Chart(chartCanvas, {
-        plugins: [ChartDataLabels],
-        type: 'horizontalBar',
-        data: {
-          labels: sortedChartLabels,
-          datasets: [{
-            data: sortedChartData,
-            backgroundColor: '#ffffff',
-            hoverBackgroundColor: '#ffffff',
-            anchor: 'start',
-            barThickness: 44,
-            minBarLength: 50,
-          }],
-        },
-        options: {
-          responsive: false,
-          plugins: {
-            datalabels: {
-              font: {
-                size: 13,
-              },
-              color: '#000000',
-              anchor: 'end',
-              align: 'start',
-              formatter: ChartsOptions[chartTypeUpperCase].setFormatter,
-            },
-          },
-          title: {
-            display: true,
-            text: chartTypeUpperCase,
-            fontColor: '#000000',
-            fontSize: 23,
-            position: 'left',
-          },
-          scales: {
-            yAxes: [{
-              ticks: {
-                fontColor: '#000000',
-                padding: 5,
-                fontSize: 13,
-              },
-              gridLines: {
-                display: false,
-                drawBorder: false,
-              },
-            }],
-            xAxes: [{
-              ticks: {
-                display: false,
-                beginAtZero: true,
-              },
-              gridLines: {
-                display: false,
-                drawBorder: false,
-              },
-            }],
-          },
-          legend: {
-            display: false,
-          },
-          tooltips: {
-            enabled: false,
-          },
-        },
-      }));
+    this.#charts.forEach(({ id, ...options }) => {
+      this.#ids[id] = createChart(element.querySelector(`#${id}`), options);
     });
-  };
+  }
 }

@@ -317,24 +317,28 @@ export default class FormCreateEditView extends SmartView {
     this.#removeDatePickers();
   }
 
+  #parseOffersCheckbox = ({ checkedOnly = false, addIsChecked = false } = {}) => {
+    const offersElements = this.element
+      .querySelectorAll(`.event__offer-checkbox${checkedOnly ? ':checked' : ''}`);
+
+    const offers = [];
+    offersElements.forEach(({ id, name, checked, dataset: { price }}) => {
+      offers.push({
+        id: +id,
+        title: name,
+        price: +price,
+        ...addIsChecked && { isChecked: checked },
+      });
+    });
+
+    return offers;
+  }
+
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
 
-    const offers = [];
-    const checkedOffers = this.element.querySelectorAll('.event__offer-checkbox:checked');
-
-    checkedOffers.forEach((offerElement) => {
-      offers.push(
-        {
-          id: +offerElement.id,
-          title: offerElement.name,
-          price: +offerElement.dataset.price,
-        }
-      );
-    });
-
     const point = FormCreateEditView.parseDataToPoint(this._data);
-    point.offers = offers;
+    point.offers = this.#parseOffersCheckbox({ checkedOnly: true });
 
     this._callback.formSubmit(point);
   }
@@ -380,6 +384,7 @@ export default class FormCreateEditView extends SmartView {
 
     this.updateData({
       destination,
+      offers: this.#parseOffersCheckbox({ addIsChecked: true }),
       isDescriptionExist: !!destination.description,
       isPicturesExist: !!destination.pictures.length,
       isDestinationExist: !!destination.description || !!destination.pictures.length,
@@ -391,9 +396,11 @@ export default class FormCreateEditView extends SmartView {
 
     const type = evt.target.value;
     const typeOffers = this.#allOffersMap.get(type) ?? [];
-    const offers = FormCreateEditView.getRenderedWithCheckboxOffers([], typeOffers);
+    const isOffersExist = typeOffers.length > 0;
 
-    const isOffersExist = offers.length > 0;
+    const offers = isOffersExist
+      ? FormCreateEditView.getRenderedWithCheckboxOffers([], typeOffers)
+      : [];
 
     this.updateData({type, offers, isOffersExist}, false);
   }

@@ -1,60 +1,64 @@
-import AbstractView from './abstract-view.js';
+import SmartView from './smart-view.js';
+
 import { NavigationItem } from '../utils/const.js';
 import { capitalize } from '../utils/common.js';
 
 const NAVIGATION_ACTIVE_CLASS = 'trip-tabs__btn--active';
 
-const createNavigationItemTemplate = (navigationItem) => (
-  `<a class="trip-tabs__btn ${navigationItem === 'table' ? NAVIGATION_ACTIVE_CLASS : ''}" href="#" data-navigation-name="${navigationItem}">${capitalize(navigationItem)}</a>`
+const createNavigationItemTemplate = (tab, isChecked = false) => (
+  `<a
+    href="#"
+    class="trip-tabs__btn ${isChecked ? NAVIGATION_ACTIVE_CLASS : ''}"
+    data-name="${tab}"
+  >${capitalize(tab)}</a>`
 );
 
-// const createNavigationTemplate = () => (
-//   `<nav class="trip-controls__trip-tabs  trip-tabs">
-//     <a class="trip-tabs__btn  trip-tabs__btn--active" href="#">Table</a>
-//     <a class="trip-tabs__btn" href="#">Stats</a>
-//   </nav>`
-// );
+const createNavigationTemplate = ({ activeTab, tabs }) => (
+  `<nav class="trip-controls__trip-tabs trip-tabs">
+    ${tabs.map((tab) => createNavigationItemTemplate(tab, tab === activeTab)).join('')}
+  </nav>`
+);
 
-const createNavigationTemplate = () => {
-  const navigationItemsTemplate = Object.values(NavigationItem).map((navigationItem) => createNavigationItemTemplate(navigationItem)).join('');
+export default class NavigationView extends SmartView {
+  constructor(activeTab) {
+    super();
 
-  return (
-    `<nav class="trip-controls__trip-tabs trip-tabs">
-      ${navigationItemsTemplate}
-    </nav>`
-  );
-};
-
-export default class NavigationView extends AbstractView {
-
-  get template() {
-    return createNavigationTemplate();
+    this._data = {
+      activeTab,
+      tabs: Object.values(NavigationItem),
+    };
   }
 
-  setNavigationClickHandler = (callback) => {
-    this._callback.navigationClick = callback;
-    this.element.addEventListener('click', this.#navigationClickHandler);
+  get template() {
+    return createNavigationTemplate(this._data);
+  }
+
+  setTabChangeHandler = (callback) => {
+    this._callback.changeTab = callback;
+    this.element.addEventListener('click', this.#clickHandler);
   };
 
-  setNavigationItem = (navigationName) => {
-    const navigationItems = this.element.querySelectorAll('.trip-tabs__btn');
+  changeTab = (tab) => {
+    this.updateData({ activeTab: tab }, false);
+  }
 
-    navigationItems.forEach((item) => {
-      item.classList[item.dataset.navigationName === navigationName ? 'add' : 'remove'](NAVIGATION_ACTIVE_CLASS);
-    });
-  };
+  restoreHandlers = () => {
+    this.setTabChangeHandler(this._callback.changeTab);
+  }
 
-  #navigationClickHandler = (evt) => {
+  #clickHandler = (evt) => {
     evt.preventDefault();
 
-    const target = evt.target.closest('.trip-tabs__btn');
-
-    if (!target || target.classList.contains(NAVIGATION_ACTIVE_CLASS)) {
+    if (evt.target.nodeName !== 'A')  {
       return;
     }
-    const targetName = target.dataset.navigationName;
 
-    this.setNavigationItem(targetName);
-    this._callback.navigationClick(targetName);
-  };
+    const name = evt.target.dataset.name;
+    if (this._data.activeTab === name) {
+      return;
+    }
+
+    this.updateData({ activeTab: name }, false);
+    this._callback.changeTab(name);
+  }
 }
