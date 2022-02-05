@@ -1,4 +1,6 @@
-import MenuView from '../view/menu-view.js';
+import NavigationView from '../view/navigation-view.js';
+// import MenuView from '../view/menu-view.js';
+
 import NewEventButtonView from '../view/new-event-button-view.js';
 import FiltersContainerView from '../view/filters-container-view.js';
 import TripEventsView from '../view/trip-events-view.js';
@@ -20,7 +22,6 @@ export default class GeneralPresenter {
   #headerElement = null;
   #mainElement = null;
   #tripMainElement = null;
-  #tripControlsElement = null;
   #navigationElement = null;
   #mainContainerElement = null;
 
@@ -29,7 +30,8 @@ export default class GeneralPresenter {
   #offersModel = null;
   #filterModel = null;
 
-  #menuComponent = new MenuView();
+  // #menuComponent = new MenuView();
+  #menuComponent = new NavigationView();
   #newEventButtonComponent = new NewEventButtonView();
   #filtersContainerComponent = new FiltersContainerView();
 
@@ -86,7 +88,6 @@ export default class GeneralPresenter {
 
   init = () => {
     this.#tripMainElement = this.#headerElement.querySelector('.trip-main');
-    this.#tripControlsElement = this.#headerElement.querySelector('.trip-controls');
     this.#navigationElement = this.#headerElement.querySelector('.trip-controls__navigation');
     this.#mainContainerElement = this.#mainElement.querySelector('.page-main__container');
 
